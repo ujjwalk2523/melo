@@ -58,6 +58,45 @@ class Song {
     );
   }
 
+  /// Create a normalized Song instance from the Melo backend API response.
+  factory Song.fromJson(Map<String, dynamic> json) {
+    final durationSeconds = (json['durationSeconds'] as num?)?.toInt() ?? 0;
+    final rawDate = json['releaseDate'] as String?;
+
+    return Song(
+      id: json['id'] as String? ?? 'unknown',
+      title: json['title'] as String? ?? 'Untitled Track',
+      artist: json['artist'] as String? ?? 'Unknown Artist',
+      album: json['album'] as String? ?? '',
+      artworkUrl: json['artworkUrl'] as String? ?? '',
+      duration: Duration(seconds: durationSeconds),
+      streamUrl: json['streamUrl'] as String?,
+      downloadUrl: json['downloadUrl'] as String?,
+      isDownloadable: json['isDownloadable'] as bool? ?? false,
+      provider: json['provider'] as String? ?? 'audius',
+      genre: json['genre'] as String?,
+      releaseDate: rawDate != null ? DateTime.tryParse(rawDate) : null,
+    );
+  }
+
+  /// Serialize Song into a JSON map.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'artist': artist,
+      'album': album,
+      'artworkUrl': artworkUrl,
+      'durationSeconds': duration.inSeconds,
+      'streamUrl': streamUrl,
+      'downloadUrl': downloadUrl,
+      'isDownloadable': isDownloadable,
+      'provider': provider,
+      'genre': genre,
+      'releaseDate': releaseDate?.toIso8601String(),
+    };
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

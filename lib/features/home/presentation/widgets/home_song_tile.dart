@@ -34,83 +34,91 @@ class HomeSongTile extends StatelessWidget {
         borderRadius: AppDimensions.borderRadiusMd,
         clipBehavior: Clip.antiAlias,
         child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.space12,
-          vertical: AppDimensions.space4,
-        ),
-        leading: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (rank != null) ...[
-              SizedBox(
-                width: 24,
-                child: Text(
-                  rank.toString(),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isPlaying ? AppColors.primary : AppColors.textMuted,
+          onTap: onTap,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space12,
+            vertical: AppDimensions.space4,
+          ),
+          leading: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (rank != null) ...[
+                SizedBox(
+                  width: 24,
+                  child: Text(
+                    rank.toString(),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: isPlaying
+                          ? AppColors.primary
+                          : AppColors.textMuted,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppDimensions.space8),
-            ],
-            ClipRRect(
-              borderRadius: AppDimensions.borderRadiusSm,
-              child: Image.network(
-                song.artworkUrl,
-                width: 48,
-                height: 48,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
+                const SizedBox(width: AppDimensions.space8),
+              ],
+              ClipRRect(
+                borderRadius: AppDimensions.borderRadiusSm,
+                child: Image.network(
+                  song.artworkUrl,
                   width: 48,
                   height: 48,
-                  color: AppColors.surfaceElevated,
-                  child: const Icon(
-                    Icons.music_note,
-                    color: AppColors.textMuted,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 48,
+                    height: 48,
+                    color: AppColors.surfaceElevated,
+                    child: const Icon(
+                      Icons.music_note,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ),
               ),
+            ],
+          ),
+          title: Text(
+            song.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              color: isPlaying ? AppColors.primary : AppColors.textPrimary,
             ),
-          ],
-        ),
-        title: Text(
-          song.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 15,
-            color: isPlaying ? AppColors.primary : AppColors.textPrimary,
+          ),
+          subtitle: Text(
+            '${song.artist} • ${song.album}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                DurationFormatter.format(song.duration),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: AppColors.textMuted,
+                  size: 20,
+                ),
+                onPressed: onMore ?? () {},
+              ),
+            ],
           ),
         ),
-        subtitle: Text(
-          '${song.artist} • ${song.album}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              DurationFormatter.format(song.duration),
-              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.more_vert_rounded,
-                color: AppColors.textMuted,
-                size: 20,
-              ),
-              onPressed: onMore ?? () {},
-            ),
-          ],
-        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

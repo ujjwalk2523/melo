@@ -73,6 +73,7 @@ class SearchScreen extends ConsumerWidget {
 
     final playerState = ref.watch(playerNotifierProvider);
     final currentSong = playerState.currentSong;
+    final isSearching = ref.watch(isSearchLoadingProvider);
 
     final hasResults =
         songResults.isNotEmpty ||
@@ -156,7 +157,14 @@ class SearchScreen extends ConsumerWidget {
                 ),
               ),
 
-            const SizedBox(height: AppDimensions.space4),
+            if (isSearching)
+              const LinearProgressIndicator(
+                minHeight: 2,
+                color: AppColors.primary,
+                backgroundColor: Colors.transparent,
+              )
+            else
+              const SizedBox(height: AppDimensions.space4),
 
             // Main Content Body
             Expanded(

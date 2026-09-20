@@ -41,7 +41,7 @@ lib/
 
 ---
 
-## Phase 1 Verification
+## Verification
 
 Run tests and analysis from the project root:
 
@@ -49,4 +49,33 @@ Run tests and analysis from the project root:
 flutter analyze
 flutter test
 flutter build apk --debug
+```
+
+---
+
+## Phase 3: Backend & Music Provider Architecture
+
+Melo includes a lightweight, modular Node.js/TypeScript backend service under `backend/`.
+
+```text
+backend/
+├── src/
+│   ├── config/env.ts              # Zod environment configuration
+│   ├── controllers/               # Health, Search, and Track controllers
+│   ├── middleware/                # Error handling and 404 middleware
+│   ├── providers/                 # MusicProvider interface (Audius, Jamendo)
+│   ├── routes/                    # API routes (/api/health, /api/search, /api/tracks)
+│   ├── services/                  # MusicService and ProviderRegistry
+│   └── types/music.ts             # Normalized provider-agnostic domain models
+└── tests/                         # Vitest unit & normalization tests
+```
+
+### Running the Backend
+
+```bash
+cd backend
+npm install
+npm test
+npm run build
+npm start
 ```
