@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:melo/features/player/data/audio_player_service.dart';
+import 'package:melo/features/player/data/melo_audio_handler.dart';
 import 'package:melo/features/player/domain/models/player_state.dart';
 import 'package:melo/shared/models/song.dart';
 
 export 'package:melo/features/player/data/audio_player_service.dart';
+export 'package:melo/features/player/data/melo_audio_handler.dart';
 export 'package:melo/features/player/domain/models/player_state.dart';
 
 /// Provides the active audio player service instance.
@@ -22,26 +24,51 @@ final audioPlayerServiceProvider = Provider<AudioPlayerService>((ref) {
   return service;
 });
 
+/// Centralized provider for the background audio handler.
+final audioHandlerProvider = Provider<MeloAudioHandler?>((ref) => null);
+
 /// Centralized Riverpod provider for Melo's audio player.
 final playerNotifierProvider =
     StateNotifierProvider<PlayerNotifier, PlayerState>((ref) {
       final audioService = ref.watch(audioPlayerServiceProvider);
-      return PlayerNotifier(audioService);
+      final audioHandler = ref.watch(audioHandlerProvider);
+      return PlayerNotifier(audioService, audioHandler);
     });
 
 /// Manages real audio playback, reactive state derivation, and queue traversal.
 class PlayerNotifier extends StateNotifier<PlayerState> {
   final AudioPlayerService _audioService;
+  final MeloAudioHandler? _audioHandler;
 
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<Duration>? _bufferedSubscription;
   StreamSubscription<AudioEngineState>? _stateSubscription;
 
-  PlayerNotifier([AudioPlayerService? audioService])
-    : _audioService = audioService ?? JustAudioPlayerService(),
-      super(const PlayerState()) {
+  PlayerNotifier([
+    AudioPlayerService? audioService,
+    MeloAudioHandler? audioHandler,
+  ]) : _audioService = audioService ?? JustAudioPlayerService(),
+       _audioHandler = audioHandler,
+       super(const PlayerState()) {
     _initSubscriptions();
+    _bindAudioHandler();
+  }
+
+  void _bindAudioHandler() {
+    final handler = _audioHandler;
+    if (handler == null) return;
+    handler.onPlayAction = resume;
+    handler.onPauseAction = pause;
+    handler.onStopAction = stop;
+    handler.onNextAction = next;
+    handler.onPreviousAction = previous;
+    handler.onSeekAction = seek;
+    handler.onSkipToQueueItemAction = (index) async {
+      if (index >= 0 && index < state.queue.length) {
+        await play(state.queue[index]);
+      }
+    };
   }
 
   void _initSubscriptions() {
@@ -49,6 +76,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     _positionSubscription = _audioService.positionStream.listen((pos) {
       if (mounted) {
         state = state.copyWith(position: pos);
+        _syncAudioHandlerPlaybackState();
       }
     });
 
@@ -56,6 +84,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     _durationSubscription = _audioService.durationStream.listen((dur) {
       if (mounted && dur != null && dur > Duration.zero) {
         state = state.copyWith(duration: dur);
+        _syncAudioHandlerPlaybackState();
       }
     });
 
@@ -63,6 +92,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     _bufferedSubscription = _audioService.bufferedPositionStream.listen((buf) {
       if (mounted) {
         state = state.copyWith(bufferedPosition: buf);
+        _syncAudioHandlerPlaybackState();
       }
     });
 
@@ -92,6 +122,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
           }
           break;
       }
+      _syncAudioHandlerPlaybackState();
     });
   }
 
@@ -103,6 +134,9 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
         : [...activeQueue, song];
 
     final streamUrl = song.streamUrl;
+
+    _audioHandler?.updateCurrentSong(song);
+    _audioHandler?.setSongQueue(updatedQueue);
 
     // STEP 6 & STEP 19: Only play legitimate authorized stream URLs.
     // If no stream URL exists (e.g. fictional mock song), show a controlled error.
@@ -116,6 +150,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
           queue: updatedQueue,
           clearError: true,
         );
+        _syncAudioHandlerPlaybackState();
         unawaited(_audioService.play());
         return;
       }
@@ -125,6 +160,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
         errorMessage: 'Playback is unavailable for this track.',
         queue: updatedQueue,
       );
+      _syncAudioHandlerPlaybackState();
       return;
     }
 
@@ -136,6 +172,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       queue: updatedQueue,
       clearError: true,
     );
+    _syncAudioHandlerPlaybackState();
 
     try {
       final loadedDuration = await _audioService.setUrl(streamUrl);
@@ -146,12 +183,14 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       await _audioService.play();
       if (!mounted) return;
       state = state.copyWith(status: PlayerStatus.playing);
+      _syncAudioHandlerPlaybackState();
     } catch (e) {
       if (!mounted) return;
       state = state.copyWith(
         status: PlayerStatus.error,
         errorMessage: 'Unable to stream this track. Please check connection.',
       );
+      _syncAudioHandlerPlaybackState();
     }
   }
 
@@ -159,6 +198,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   Future<void> pause() async {
     if (state.hasSong) {
       state = state.copyWith(status: PlayerStatus.paused);
+      _syncAudioHandlerPlaybackState();
       await _audioService.pause();
     }
   }
@@ -167,11 +207,20 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   Future<void> resume() async {
     if (state.hasSong) {
       state = state.copyWith(status: PlayerStatus.playing);
+      _syncAudioHandlerPlaybackState();
       if (state.isCompleted) {
         await seek(Duration.zero);
       }
       await _audioService.play();
     }
+  }
+
+  /// Stops playback.
+  Future<void> stop() async {
+    await pause();
+    await seek(Duration.zero);
+    state = state.copyWith(status: PlayerStatus.stopped);
+    _syncAudioHandlerPlaybackState();
   }
 
   /// Toggles between play and pause.
@@ -195,6 +244,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
 
     state = state.copyWith(position: clamped);
     await _audioService.seek(clamped);
+    _syncAudioHandlerPlaybackState();
   }
 
   /// Skips to the next song in queue.
@@ -317,13 +367,42 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     final item = updated.removeAt(oldIndex);
     updated.insert(targetIndex, item);
     state = state.copyWith(queue: updated);
+    _audioHandler?.setSongQueue(updated);
   }
 
   void removeFromQueue(int index) {
     if (index >= 0 && index < state.queue.length) {
       final updated = List<Song>.from(state.queue)..removeAt(index);
       state = state.copyWith(queue: updated);
+      _audioHandler?.setSongQueue(updated);
     }
+  }
+
+  void _syncAudioHandlerPlaybackState() {
+    final handler = _audioHandler;
+    if (handler == null) return;
+    final queueIndex = state.currentSong != null
+        ? state.queue.indexOf(state.currentSong!)
+        : null;
+
+    final processingStatus = switch (state.status) {
+      PlayerStatus.initial => AudioProcessingStatus.idle,
+      PlayerStatus.loading => AudioProcessingStatus.loading,
+      PlayerStatus.buffering => AudioProcessingStatus.buffering,
+      PlayerStatus.playing => AudioProcessingStatus.ready,
+      PlayerStatus.paused => AudioProcessingStatus.ready,
+      PlayerStatus.completed => AudioProcessingStatus.completed,
+      PlayerStatus.stopped => AudioProcessingStatus.idle,
+      PlayerStatus.error => AudioProcessingStatus.idle,
+    };
+
+    handler.updatePlaybackState(
+      isPlaying: state.isPlaying,
+      processingStatus: processingStatus,
+      position: state.position,
+      bufferedPosition: state.bufferedPosition,
+      queueIndex: queueIndex != null && queueIndex != -1 ? queueIndex : null,
+    );
   }
 
   @override
