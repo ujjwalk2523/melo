@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:melo/core/database/database_providers.dart';
 import 'package:melo/core/theme/app_colors.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
 import 'package:melo/features/player/providers/player_provider.dart';
+import 'package:melo/features/playlists/domain/playlist_models.dart';
 import 'package:melo/shared/data/mock_catalog.dart';
 import 'package:melo/shared/models/song.dart';
 import 'package:melo/shared/widgets/album_card.dart';
@@ -31,14 +33,81 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     'Albums',
   ];
 
+  void _showCreatePlaylistDialog(BuildContext context) {
+    final textController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppDimensions.borderRadiusLg,
+        ),
+        title: const Text(
+          'New Playlist',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: TextField(
+          controller: textController,
+          autofocus: true,
+          style: const TextStyle(color: AppColors.textPrimary),
+          decoration: InputDecoration(
+            hintText: 'Playlist name',
+            hintStyle: const TextStyle(color: AppColors.textTertiary),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppDimensions.borderRadiusMd,
+              borderSide: const BorderSide(color: AppColors.surfaceBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: AppDimensions.borderRadiusMd,
+              borderSide: const BorderSide(color: AppColors.primary),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () async {
+              final name = textController.text.trim();
+              if (name.isNotEmpty) {
+                await ref.read(playlistRepositoryProvider).createPlaylist(name);
+                if (ctx.mounted) Navigator.of(ctx).pop();
+              }
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final playerState = ref.watch(playerNotifierProvider);
     final currentSong = playerState.currentSong;
 
-    final likedSongs = MockCatalog.songs
-        .where((s) => playerState.isSongFavorite(s.id))
+    // Database streams
+    final dbFavorites = ref.watch(favoriteSongsStreamProvider).value ?? [];
+    final dbPlaylists = ref.watch(userPlaylistsStreamProvider).value ?? [];
+
+    // Combine database favorites with any mock favorites for seamless experience
+    final mockFavorites = MockCatalog.songs
+        .where(
+          (s) =>
+              playerState.isSongFavorite(s.id) &&
+              !dbFavorites.any((df) => df.id == s.id),
+        )
         .toList();
+    final likedSongs = [...dbFavorites, ...mockFavorites];
 
     final downloadedSongs = MockCatalog.songs
         .where((s) => playerState.downloadedIds.contains(s.id))
@@ -72,17 +141,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     icon: const Icon(Icons.add_rounded, size: 26),
                     color: AppColors.primary,
                     tooltip: 'New Playlist',
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Create playlist placeholder (Phase 2 UI)',
-                          ),
-                          duration: Duration(seconds: 1),
-                          backgroundColor: AppColors.surfaceHighlight,
-                        ),
-                      );
-                    },
+                    onPressed: () => _showCreatePlaylistDialog(context),
                   ),
                 ],
               ),
@@ -134,6 +193,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 playerState,
                 likedSongs,
                 downloadedSongs,
+                dbPlaylists,
               ),
             ),
           ],
@@ -148,6 +208,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     dynamic playerState,
     List<Song> likedSongs,
     List<Song> downloadedSongs,
+    List<Playlist> dbPlaylists,
   ) {
     switch (_selectedTabIndex) {
       case 1:
@@ -174,7 +235,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 onFavoriteToggle: () {
                   ref
                       .read(playerNotifierProvider.notifier)
-                      .toggleFavorite(song.id);
+                      .toggleFavorite(song.id, song);
                 },
                 onTap: () {
                   ref
@@ -188,13 +249,76 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
       case 2:
         // Playlists
-        return ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space16,
-            vertical: AppDimensions.space8,
-          ),
-          children: MockCatalog.playlists.map((playlist) {
-            return Padding(
+        final allPlaylists = <Widget>[];
+
+        // User-created playlists first
+        for (final pl in dbPlaylists) {
+          allPlaylists.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppDimensions.space12),
+              child: Material(
+                color: AppColors.surfaceElevated,
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppDimensions.borderRadiusLg,
+                  side: const BorderSide(color: AppColors.surfaceBorder),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(AppDimensions.space12),
+                  leading: AuraArtwork(
+                    seed: pl.id + pl.name,
+                    size: 54,
+                    borderRadius: AppDimensions.borderRadiusMd,
+                    fallbackIcon: Icons.queue_music_rounded,
+                  ),
+                  title: Text(
+                    pl.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${pl.trackCount} songs${pl.description != null && pl.description!.isNotEmpty ? ' • ${pl.description}' : ''}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(
+                      Icons.play_circle_fill_rounded,
+                      color: AppColors.primary,
+                      size: 32,
+                    ),
+                    onPressed: () {
+                      if (pl.songs.isNotEmpty) {
+                        ref
+                            .read(playerNotifierProvider.notifier)
+                            .play(pl.songs.first, queue: pl.songs);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('This playlist has no songs yet.'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Mock playlists
+        for (final playlist in MockCatalog.playlists) {
+          allPlaylists.add(
+            Padding(
               padding: const EdgeInsets.only(bottom: AppDimensions.space12),
               child: Material(
                 color: AppColors.surfaceElevated,
@@ -244,8 +368,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 ),
               ),
-            );
-          }).toList(),
+            ),
+          );
+        }
+
+        return ListView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
+          ),
+          children: allPlaylists,
         );
 
       case 3:

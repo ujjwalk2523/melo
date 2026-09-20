@@ -1,27 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:melo/core/constants/app_constants.dart';
+import 'package:melo/core/database/database_providers.dart';
 import 'package:melo/core/theme/app_colors.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
 
-/// Primary Profile and Settings screen displaying user preferences, listening stats, and audio settings.
-class ProfileScreen extends StatefulWidget {
+/// Primary Profile and Settings screen displaying persistent user preferences, listening stats, and audio settings.
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final prefs = ref.watch(userPreferencesNotifierProvider);
+    final notifier = ref.read(userPreferencesNotifierProvider.notifier);
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  bool _offlineOnly = false;
-  String _audioQuality = 'Hi-Res Lossless (FLAC 24-bit)';
-  bool _gaplessPlayback = true;
-  bool _normalizeVolume = true;
-  double _crossfadeDuration = 3.0;
-  bool _downloadOnWifiOnly = true;
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -166,23 +159,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildSettingTile(
               icon: Icons.high_quality_rounded,
               title: 'Streaming Quality',
-              subtitle: _audioQuality,
-              onTap: () => _showAudioQualityDialog(context),
+              subtitle: prefs.audioQuality,
+              onTap: () =>
+                  _showAudioQualityDialog(context, ref, prefs.audioQuality),
             ),
             _buildSettingSwitch(
               icon: Icons.all_inclusive_rounded,
               title: 'Gapless Playback',
               subtitle: 'Seamless transitions between continuous tracks',
-              value: _gaplessPlayback,
-              onChanged: (val) => setState(() => _gaplessPlayback = val),
+              value: prefs.gaplessPlayback,
+              onChanged: (val) => notifier.setGaplessPlayback(val),
             ),
             _buildSettingSwitch(
               icon: Icons.graphic_eq_rounded,
               title: 'Normalize Volume',
               subtitle:
                   'Balance equal loudness across different music providers',
-              value: _normalizeVolume,
-              onChanged: (val) => setState(() => _normalizeVolume = val),
+              value: prefs.normalizeVolume,
+              onChanged: (val) => notifier.setNormalizeVolume(val),
             ),
             // Crossfade Slider
             Container(
@@ -218,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                       Text(
-                        '${_crossfadeDuration.toInt()}s',
+                        '${prefs.crossfadeDuration.toInt()}s',
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -228,14 +222,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   Slider(
-                    value: _crossfadeDuration,
+                    value: prefs.crossfadeDuration,
                     min: 0.0,
                     max: 12.0,
                     divisions: 12,
                     activeColor: AppColors.primary,
                     inactiveColor: AppColors.progressTrack,
-                    onChanged: (val) =>
-                        setState(() => _crossfadeDuration = val),
+                    onChanged: (val) => notifier.setCrossfadeDuration(val),
                   ),
                 ],
               ),
@@ -248,15 +241,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.cloud_off_rounded,
               title: 'Offline Mode Only',
               subtitle: 'Only stream tracks cached or downloaded locally',
-              value: _offlineOnly,
-              onChanged: (val) => setState(() => _offlineOnly = val),
+              value: prefs.offlineOnly,
+              onChanged: (val) => notifier.setOfflineOnly(val),
             ),
             _buildSettingSwitch(
               icon: Icons.wifi_rounded,
               title: 'Download via Wi-Fi Only',
               subtitle: 'Prevent consuming cellular data for downloads',
-              value: _downloadOnWifiOnly,
-              onChanged: (val) => setState(() => _downloadOnWifiOnly = val),
+              value: prefs.downloadOnWifiOnly,
+              onChanged: (val) => notifier.setDownloadOnWifiOnly(val),
             ),
             _buildSettingTile(
               icon: Icons.cleaning_services_rounded,
@@ -453,7 +446,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showAudioQualityDialog(BuildContext context) {
+  void _showAudioQualityDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String currentQuality,
+  ) {
     final options = [
       'Normal (160 kbps MP3)',
       'High (320 kbps AAC)',
@@ -486,7 +483,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const Divider(color: AppColors.surfaceBorder),
               ...options.map((opt) {
-                final isSelected = opt == _audioQuality;
+                final isSelected = opt == currentQuality;
                 return ListTile(
                   title: Text(
                     opt,
@@ -506,7 +503,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         )
                       : null,
                   onTap: () {
-                    setState(() => _audioQuality = opt);
+                    ref
+                        .read(userPreferencesNotifierProvider.notifier)
+                        .setAudioQuality(opt);
                     Navigator.of(context).pop();
                   },
                 );

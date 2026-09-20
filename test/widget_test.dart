@@ -28,6 +28,9 @@ void main() {
       expect(find.text(AppConstants.navSearch), findsOneWidget);
       expect(find.text(AppConstants.navLibrary), findsOneWidget);
       expect(find.text(AppConstants.navProfile), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(milliseconds: 100));
     });
 
     testWidgets(
@@ -122,6 +125,9 @@ void main() {
         expect(find.text('Ujjwal'), findsOneWidget);
         expect(find.text('Playback & Audio Quality'), findsOneWidget);
         expect(find.byType(MiniPlayer), findsOneWidget);
+
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(milliseconds: 100));
       },
     );
   });

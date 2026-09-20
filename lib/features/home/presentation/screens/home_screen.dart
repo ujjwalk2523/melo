@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:melo/core/database/database_providers.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
 import 'package:melo/features/home/presentation/widgets/albums_section.dart';
 import 'package:melo/features/home/presentation/widgets/artists_section.dart';
@@ -13,14 +14,19 @@ import 'package:melo/features/player/providers/player_provider.dart';
 import 'package:melo/shared/widgets/section_header.dart';
 import 'package:melo/shared/widgets/song_tile.dart';
 
-/// Primary Home screen for Melo showcasing personalized feeds, trending music, and recent tracks.
+/// The primary Home dashboard screen displaying greetings, quick picks, continue listening, and curated sections.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quickPicks = ref.watch(quickPicksProvider);
-    final continueListening = ref.watch(continueListeningProvider);
+    final recentTracks = ref.watch(recentlyPlayedStreamProvider).value ?? [];
+    final quickPicks = recentTracks.length >= 4
+        ? recentTracks.take(6).toList()
+        : ref.watch(quickPicksProvider);
+    final continueListening = recentTracks.isNotEmpty
+        ? recentTracks.first
+        : ref.watch(continueListeningProvider);
     final trending = ref.watch(trendingSongsProvider);
     final chillLoFi = ref.watch(chillLoFiProvider);
     final freshDiscoveries = ref.watch(freshDiscoveriesProvider);
@@ -150,7 +156,7 @@ class HomeScreen extends ConsumerWidget {
                       onFavoriteToggle: () {
                         ref
                             .read(playerNotifierProvider.notifier)
-                            .toggleFavorite(song.id);
+                            .toggleFavorite(song.id, song);
                       },
                       onTap: () {
                         ref

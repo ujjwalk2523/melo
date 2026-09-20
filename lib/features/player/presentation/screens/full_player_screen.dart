@@ -173,7 +173,7 @@ class FullPlayerScreen extends ConsumerWidget {
                           onPressed: () {
                             ref
                                 .read(playerNotifierProvider.notifier)
-                                .toggleFavorite(song.id);
+                                .toggleFavorite(song.id, song);
                           },
                         ),
                       ],

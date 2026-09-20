@@ -37,13 +37,25 @@ dependencies:
   flutter_riverpod: ^2.6.1
   go_router: ^14.8.1
   http: ^1.2.0
+  # Audio playback and background service
   just_audio: ^0.10.6
   audio_service: ^0.18.19
   audio_session: ^0.2.4
 
+  # Local persistence & user preferences
+  drift: ^2.35.0
+  sqlite3_flutter_libs: ^0.6.0+eol
+  path_provider: ^2.1.6
+  path: ^1.9.1
+  shared_preferences: ^2.5.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  # Drift database code generator
+  drift_dev: ^2.35.0
+  build_runner: ^2.16.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

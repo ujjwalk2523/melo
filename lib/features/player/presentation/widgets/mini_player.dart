@@ -119,7 +119,7 @@ class MiniPlayer extends ConsumerWidget {
                         onPressed: () {
                           ref
                               .read(playerNotifierProvider.notifier)
-                              .toggleFavorite(currentSong.id);
+                              .toggleFavorite(currentSong.id, currentSong);
                         },
                       ),
 

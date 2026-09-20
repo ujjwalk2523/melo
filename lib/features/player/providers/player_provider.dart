@@ -3,8 +3,12 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:melo/core/database/database_providers.dart';
+import 'package:melo/features/favorites/domain/favorites_repository.dart';
+import 'package:melo/features/history/domain/history_repository.dart';
 import 'package:melo/features/player/data/audio_player_service.dart';
 import 'package:melo/features/player/data/melo_audio_handler.dart';
+import 'package:melo/features/player/data/player_snapshot_repository.dart';
 import 'package:melo/features/player/domain/models/player_state.dart';
 import 'package:melo/shared/models/song.dart';
 
@@ -32,27 +36,56 @@ final playerNotifierProvider =
     StateNotifierProvider<PlayerNotifier, PlayerState>((ref) {
       final audioService = ref.watch(audioPlayerServiceProvider);
       final audioHandler = ref.watch(audioHandlerProvider);
-      return PlayerNotifier(audioService, audioHandler);
+      final favoritesRepo = ref.watch(favoritesRepositoryProvider);
+      final historyRepo = ref.watch(historyRepositoryProvider);
+      final snapshotRepo = ref.watch(playerSnapshotRepositoryProvider);
+      return PlayerNotifier(
+        audioService,
+        audioHandler,
+        favoritesRepo,
+        historyRepo,
+        snapshotRepo,
+      );
     });
 
 /// Manages real audio playback, reactive state derivation, and queue traversal.
 class PlayerNotifier extends StateNotifier<PlayerState> {
   final AudioPlayerService _audioService;
   final MeloAudioHandler? _audioHandler;
+  final FavoritesRepository? _favoritesRepo;
+  final HistoryRepository? _historyRepo;
+  final PlayerSnapshotRepository? _snapshotRepo;
 
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<Duration>? _bufferedSubscription;
   StreamSubscription<AudioEngineState>? _stateSubscription;
+  StreamSubscription<Set<String>>? _favoriteSubscription;
+  Timer? _snapshotDebounceTimer;
 
   PlayerNotifier([
     AudioPlayerService? audioService,
     MeloAudioHandler? audioHandler,
+    FavoritesRepository? favoritesRepo,
+    HistoryRepository? historyRepo,
+    PlayerSnapshotRepository? snapshotRepo,
   ]) : _audioService = audioService ?? JustAudioPlayerService(),
        _audioHandler = audioHandler,
+       _favoritesRepo = favoritesRepo,
+       _historyRepo = historyRepo,
+       _snapshotRepo = snapshotRepo,
        super(const PlayerState()) {
     _initSubscriptions();
     _bindAudioHandler();
+    _initFavoritesSubscription();
+  }
+
+  void _initFavoritesSubscription() {
+    _favoriteSubscription = _favoritesRepo?.watchFavoriteIds().listen((ids) {
+      if (mounted) {
+        state = state.copyWith(favoriteIds: ids);
+      }
+    });
   }
 
   void _bindAudioHandler() {
@@ -151,6 +184,8 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
           clearError: true,
         );
         _syncAudioHandlerPlaybackState();
+        _historyRepo?.recordPlayed(song);
+        _scheduleSnapshotSave();
         unawaited(_audioService.play());
         return;
       }
@@ -184,6 +219,8 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       if (!mounted) return;
       state = state.copyWith(status: PlayerStatus.playing);
       _syncAudioHandlerPlaybackState();
+      _historyRepo?.recordPlayed(song);
+      _scheduleSnapshotSave();
     } catch (e) {
       if (!mounted) return;
       state = state.copyWith(
@@ -338,14 +375,25 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     }
   }
 
-  void toggleFavorite(String songId) {
+  Future<void> toggleFavorite(String songId, [Song? song]) async {
     final updated = Set<String>.from(state.favoriteIds);
-    if (updated.contains(songId)) {
+    final isFav = updated.contains(songId);
+    if (isFav) {
       updated.remove(songId);
+      state = state.copyWith(favoriteIds: updated);
+      await _favoritesRepo?.removeFavorite(songId);
     } else {
       updated.add(songId);
+      state = state.copyWith(favoriteIds: updated);
+      final targetSong =
+          song ??
+          (state.currentSong?.id == songId
+              ? state.currentSong
+              : state.queue.where((s) => s.id == songId).firstOrNull);
+      if (targetSong != null) {
+        await _favoritesRepo?.addFavorite(targetSong);
+      }
     }
-    state = state.copyWith(favoriteIds: updated);
   }
 
   void toggleDownload(String songId) {
@@ -368,6 +416,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     updated.insert(targetIndex, item);
     state = state.copyWith(queue: updated);
     _audioHandler?.setSongQueue(updated);
+    _scheduleSnapshotSave();
   }
 
   void removeFromQueue(int index) {
@@ -375,7 +424,52 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       final updated = List<Song>.from(state.queue)..removeAt(index);
       state = state.copyWith(queue: updated);
       _audioHandler?.setSongQueue(updated);
+      _scheduleSnapshotSave();
     }
+  }
+
+  /// Restores persistent player and queue state saved from a previous session in paused state.
+  Future<void> restoreSavedState() async {
+    final repo = _snapshotRepo;
+    if (repo == null) return;
+    final snapshot = await repo.loadSnapshot();
+    if (snapshot == null || !mounted) return;
+    if (snapshot.queue.isNotEmpty) {
+      state = state.copyWith(
+        queue: snapshot.queue,
+        currentSong: snapshot.currentSong,
+        position: snapshot.position,
+        repeatMode: snapshot.repeatMode,
+        isShuffle: snapshot.isShuffle,
+        status: snapshot.currentSong != null
+            ? PlayerStatus.paused
+            : PlayerStatus.initial,
+      );
+      if (snapshot.currentSong != null) {
+        _audioHandler?.updateCurrentSong(snapshot.currentSong!);
+        _audioHandler?.setSongQueue(snapshot.queue);
+        _syncAudioHandlerPlaybackState();
+      }
+    }
+  }
+
+  void _scheduleSnapshotSave() {
+    _snapshotDebounceTimer?.cancel();
+    _snapshotDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _saveSnapshot();
+    });
+  }
+
+  Future<void> _saveSnapshot() async {
+    final repo = _snapshotRepo;
+    if (repo == null || !mounted) return;
+    await repo.saveSnapshot(
+      currentSong: state.currentSong,
+      queue: state.queue,
+      position: state.position,
+      repeatMode: state.repeatMode,
+      isShuffle: state.isShuffle,
+    );
   }
 
   void _syncAudioHandlerPlaybackState() {
@@ -411,6 +505,8 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     _durationSubscription?.cancel();
     _bufferedSubscription?.cancel();
     _stateSubscription?.cancel();
+    _favoriteSubscription?.cancel();
+    _snapshotDebounceTimer?.cancel();
     super.dispose();
   }
 }
