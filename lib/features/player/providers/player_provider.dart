@@ -11,7 +11,7 @@ final playerNotifierProvider =
       return PlayerNotifier();
     });
 
-/// Manages playback state, queue traversal, and simulated audio progress for Phase 1.
+/// Manages playback state, queue traversal, and simulated audio progress.
 class PlayerNotifier extends StateNotifier<PlayerState> {
   Timer? _progressTicker;
 
@@ -121,7 +121,45 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     state = state.copyWith(isRepeat: !state.isRepeat);
   }
 
-  /// Internal simulated ticker for UI responsiveness in Phase 1.
+  void toggleFavorite(String songId) {
+    final updated = Set<String>.from(state.favoriteIds);
+    if (updated.contains(songId)) {
+      updated.remove(songId);
+    } else {
+      updated.add(songId);
+    }
+    state = state.copyWith(favoriteIds: updated);
+  }
+
+  void toggleDownload(String songId) {
+    final updated = Set<String>.from(state.downloadedIds);
+    if (updated.contains(songId)) {
+      updated.remove(songId);
+    } else {
+      updated.add(songId);
+    }
+    state = state.copyWith(downloadedIds: updated);
+  }
+
+  void reorderQueue(int oldIndex, int newIndex) {
+    final updated = List<Song>.from(state.queue);
+    var targetIndex = newIndex;
+    if (targetIndex > oldIndex) {
+      targetIndex -= 1;
+    }
+    final item = updated.removeAt(oldIndex);
+    updated.insert(targetIndex, item);
+    state = state.copyWith(queue: updated);
+  }
+
+  void removeFromQueue(int index) {
+    if (index >= 0 && index < state.queue.length) {
+      final updated = List<Song>.from(state.queue)..removeAt(index);
+      state = state.copyWith(queue: updated);
+    }
+  }
+
+  /// Internal simulated ticker for UI responsiveness.
   void _startTicker() {
     _progressTicker?.cancel();
     _progressTicker = Timer.periodic(const Duration(seconds: 1), (timer) {

@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:melo/core/constants/app_constants.dart';
 import 'package:melo/features/player/domain/models/player_state.dart';
 import 'package:melo/features/player/providers/player_provider.dart';
+import 'package:melo/features/search/providers/search_provider.dart';
 import 'package:melo/main.dart';
-import 'package:melo/shared/data/mock_songs.dart';
+import 'package:melo/shared/data/mock_catalog.dart';
 
 void main() {
   group('MeloApp Smoke & Navigation Tests', () {
@@ -12,8 +13,6 @@ void main() {
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(const ProviderScope(child: MeloApp()));
-
-      // Wait for router transition
       await tester.pumpAndSettle();
 
       // Verify the 4 primary navigation destinations exist
@@ -39,7 +38,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final song = MockSongs.items.first;
+      final song = MockCatalog.songs.first;
       container.read(playerNotifierProvider.notifier).play(song);
 
       final state = container.read(playerNotifierProvider);
@@ -53,7 +52,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final song = MockSongs.items.first;
+      final song = MockCatalog.songs.first;
       final notifier = container.read(playerNotifierProvider.notifier);
 
       notifier.play(song);
@@ -67,6 +66,63 @@ void main() {
 
       notifier.resume();
       expect(container.read(playerNotifierProvider).isPlaying, isTrue);
+    });
+
+    test('Toggling favorites adds and removes song id from favorites set', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final notifier = container.read(playerNotifierProvider.notifier);
+      const testSongId = 'melo-test-fav';
+
+      expect(
+        container.read(playerNotifierProvider).isSongFavorite(testSongId),
+        isFalse,
+      );
+
+      notifier.toggleFavorite(testSongId);
+      expect(
+        container.read(playerNotifierProvider).isSongFavorite(testSongId),
+        isTrue,
+      );
+
+      notifier.toggleFavorite(testSongId);
+      expect(
+        container.read(playerNotifierProvider).isSongFavorite(testSongId),
+        isFalse,
+      );
+    });
+
+    test('Seeking updates playback position within duration bounds', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final song = MockCatalog.songs.first;
+      final notifier = container.read(playerNotifierProvider.notifier);
+      notifier.play(song);
+
+      notifier.seek(const Duration(seconds: 45));
+      expect(container.read(playerNotifierProvider).position.inSeconds, 45);
+      expect(
+        container.read(playerNotifierProvider).progressFraction,
+        greaterThan(0.0),
+      );
+    });
+  });
+
+  group('SearchProvider Unit Tests', () {
+    test('Search query correctly filters catalog', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      // Initially empty
+      expect(container.read(searchSongResultsProvider), isEmpty);
+
+      // Search for 'Synthwave'
+      container.read(searchQueryProvider.notifier).state = 'Synthwave';
+      final results = container.read(searchSongResultsProvider);
+      expect(results, isNotEmpty);
+      expect(results.any((s) => s.genre == 'Synthwave'), isTrue);
     });
   });
 }

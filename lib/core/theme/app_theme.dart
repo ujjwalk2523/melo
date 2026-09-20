@@ -5,7 +5,7 @@ import 'app_colors.dart';
 import 'app_dimensions.dart';
 import 'app_typography.dart';
 
-/// Configures the Material 3 theme for Melo.
+/// Configures the Material 3 theme for Melo (Melo Dark Aura).
 abstract final class AppTheme {
   static ThemeData get darkTheme {
     final colorScheme = ColorScheme.dark(
@@ -15,6 +15,7 @@ abstract final class AppTheme {
       secondary: AppColors.secondary,
       onSecondary: AppColors.onSecondary,
       secondaryContainer: AppColors.secondaryContainer,
+      tertiary: AppColors.tertiary,
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
       surfaceContainerHighest: AppColors.surfaceElevated,
@@ -28,7 +29,6 @@ abstract final class AppTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
       textTheme: AppTypography.darkTextTheme,
-      fontFamily: 'Roboto',
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -44,6 +44,7 @@ abstract final class AppTheme {
           fontSize: 22,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
+          letterSpacing: -0.3,
         ),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
@@ -51,34 +52,41 @@ abstract final class AppTheme {
         color: AppColors.surfaceElevated,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: AppDimensions.borderRadiusMd,
+          borderRadius: AppDimensions.borderRadiusLg,
           side: const BorderSide(color: AppColors.surfaceBorder, width: 1.0),
         ),
         margin: EdgeInsets.zero,
       ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surfaceElevated,
+        modalBackgroundColor: AppColors.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+      ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surface,
         elevation: 8,
-        indicatorColor: AppColors.primary.withValues(alpha: 0.16),
+        indicatorColor: AppColors.primary.withValues(alpha: 0.2),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.primary,
+              color: AppColors.textPrimary,
             );
           }
           return const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.textMuted,
+            color: AppColors.textTertiary,
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: AppColors.primary, size: 24);
           }
-          return const IconThemeData(color: AppColors.textMuted, size: 24);
+          return const IconThemeData(color: AppColors.textTertiary, size: 24);
         }),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -88,20 +96,20 @@ abstract final class AppTheme {
           horizontal: AppDimensions.space16,
           vertical: AppDimensions.space12,
         ),
-        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+        hintStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14),
         border: OutlineInputBorder(
-          borderRadius: AppDimensions.borderRadiusFull,
+          borderRadius: AppDimensions.borderRadiusLg,
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: AppDimensions.borderRadiusFull,
+          borderRadius: AppDimensions.borderRadiusLg,
           borderSide: const BorderSide(
             color: AppColors.surfaceBorder,
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: AppDimensions.borderRadiusFull,
+          borderRadius: AppDimensions.borderRadiusLg,
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),

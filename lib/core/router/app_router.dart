@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
+import '../../features/player/presentation/screens/full_player_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/search/presentation/screens/search_screen.dart';
 import '../../shared/widgets/app_scaffold_with_nav_bar.dart';
@@ -63,6 +64,12 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
       ],
+    ),
+    // Full player route (opened above the shell)
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: AppRoutes.player,
+      builder: (context, state) => const FullPlayerScreen(),
     ),
   ],
 );

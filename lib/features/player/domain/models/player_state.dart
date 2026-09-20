@@ -12,6 +12,8 @@ class PlayerState {
   final bool isShuffle;
   final bool isRepeat;
   final List<Song> queue;
+  final Set<String> favoriteIds;
+  final Set<String> downloadedIds;
   final String? errorMessage;
 
   const PlayerState({
@@ -22,12 +24,20 @@ class PlayerState {
     this.isShuffle = false,
     this.isRepeat = false,
     this.queue = const [],
+    this.favoriteIds = const {'melo-001', 'melo-003', 'melo-006'},
+    this.downloadedIds = const {'melo-001', 'melo-005'},
     this.errorMessage,
   });
 
   bool get isPlaying => status == PlayerStatus.playing;
   bool get isLoading => status == PlayerStatus.loading;
   bool get hasSong => currentSong != null;
+
+  bool isSongFavorite(String id) => favoriteIds.contains(id);
+  bool get isCurrentFavorite =>
+      currentSong != null && favoriteIds.contains(currentSong!.id);
+  bool get isCurrentDownloaded =>
+      currentSong != null && downloadedIds.contains(currentSong!.id);
 
   double get progressFraction {
     if (duration.inMilliseconds <= 0) return 0.0;
@@ -44,6 +54,8 @@ class PlayerState {
     bool? isShuffle,
     bool? isRepeat,
     List<Song>? queue,
+    Set<String>? favoriteIds,
+    Set<String>? downloadedIds,
     String? errorMessage,
     bool clearError = false,
   }) {
@@ -55,6 +67,8 @@ class PlayerState {
       isShuffle: isShuffle ?? this.isShuffle,
       isRepeat: isRepeat ?? this.isRepeat,
       queue: queue ?? this.queue,
+      favoriteIds: favoriteIds ?? this.favoriteIds,
+      downloadedIds: downloadedIds ?? this.downloadedIds,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
