@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:melo/core/constants/app_constants.dart';
-import 'package:melo/features/player/domain/models/player_state.dart';
 import 'package:melo/features/player/presentation/screens/full_player_screen.dart';
 import 'package:melo/features/player/presentation/widgets/mini_player.dart';
 import 'package:melo/features/player/providers/player_provider.dart';

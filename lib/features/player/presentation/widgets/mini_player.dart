@@ -153,12 +153,22 @@ class MiniPlayer extends ConsumerWidget {
                         ),
                         child: IconButton(
                           padding: EdgeInsets.zero,
-                          icon: Icon(
-                            isPlaying
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded,
-                            color: Colors.white,
-                          ),
+                          icon:
+                              (playerState.isLoading || playerState.isBuffering)
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Icon(
+                                  isPlaying
+                                      ? Icons.pause_rounded
+                                      : Icons.play_arrow_rounded,
+                                  color: Colors.white,
+                                ),
                           iconSize: 22,
                           tooltip: isPlaying ? 'Pause' : 'Play',
                           onPressed: () {

@@ -312,13 +312,24 @@ class FullPlayerScreen extends ConsumerWidget {
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              isPlaying
-                                  ? Icons.pause_rounded
-                                  : Icons.play_arrow_rounded,
-                              color: Colors.white,
-                              size: 36,
-                            ),
+                            child:
+                                (playerState.isLoading ||
+                                    playerState.isBuffering)
+                                ? const SizedBox(
+                                    width: 28,
+                                    height: 28,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Icon(
+                                    isPlaying
+                                        ? Icons.pause_rounded
+                                        : Icons.play_arrow_rounded,
+                                    color: Colors.white,
+                                    size: 36,
+                                  ),
                           ),
                         ),
 
@@ -338,7 +349,9 @@ class FullPlayerScreen extends ConsumerWidget {
                         // Repeat Button
                         IconButton(
                           icon: Icon(
-                            Icons.repeat_rounded,
+                            playerState.repeatMode == PlaybackRepeatMode.one
+                                ? Icons.repeat_one_rounded
+                                : Icons.repeat_rounded,
                             color: playerState.isRepeat
                                 ? AppColors.primary
                                 : AppColors.textTertiary,
@@ -348,7 +361,7 @@ class FullPlayerScreen extends ConsumerWidget {
                           onPressed: () {
                             ref
                                 .read(playerNotifierProvider.notifier)
-                                .toggleRepeat();
+                                .cycleRepeatMode();
                           },
                         ),
                       ],
