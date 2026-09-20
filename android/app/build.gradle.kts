@@ -8,6 +8,7 @@ android {
     namespace = "com.melo.app.melo"
     compileSdk = 36
     buildToolsVersion = "36.1.0"
+    ndkVersion = "26.1.10909125"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -29,6 +30,12 @@ android {
         versionName = flutter.versionName
     }
 
+    packaging {
+        jniLibs {
+            keepDebugSymbols.add("**/*")
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
@@ -46,4 +53,10 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+tasks.whenTaskAdded {
+    if (name.contains("DuplicateClasses") || name.contains("stripDebug") || name.contains("StripDebugSymbols") || name.contains("strip")) {
+        enabled = false
+    }
 }

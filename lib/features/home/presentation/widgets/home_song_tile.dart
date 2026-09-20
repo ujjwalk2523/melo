@@ -24,16 +24,16 @@ class HomeSongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
+    return Padding(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space16,
         vertical: AppDimensions.space4,
       ),
-      decoration: BoxDecoration(
+      child: Material(
         color: isPlaying ? AppColors.surfaceHighlight : Colors.transparent,
         borderRadius: AppDimensions.borderRadiusMd,
-      ),
-      child: ListTile(
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.space12,
@@ -110,6 +110,7 @@ class HomeSongTile extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

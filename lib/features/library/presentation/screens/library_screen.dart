@@ -194,51 +194,54 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             vertical: AppDimensions.space8,
           ),
           children: MockCatalog.playlists.map((playlist) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: AppDimensions.space12),
-              decoration: BoxDecoration(
+            return Padding(
+              padding: const EdgeInsets.only(bottom: AppDimensions.space12),
+              child: Material(
                 color: AppColors.surfaceElevated,
-                borderRadius: AppDimensions.borderRadiusLg,
-                border: Border.all(color: AppColors.surfaceBorder),
-              ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.all(AppDimensions.space12),
-                leading: AuraArtwork(
-                  seed: playlist.id + playlist.title,
-                  size: 54,
-                  borderRadius: AppDimensions.borderRadiusMd,
-                  fallbackIcon: Icons.queue_music_rounded,
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppDimensions.borderRadiusLg,
+                  side: const BorderSide(color: AppColors.surfaceBorder),
                 ),
-                title: Text(
-                  playlist.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    color: AppColors.textPrimary,
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(AppDimensions.space12),
+                  leading: AuraArtwork(
+                    seed: playlist.id + playlist.title,
+                    size: 54,
+                    borderRadius: AppDimensions.borderRadiusMd,
+                    fallbackIcon: Icons.queue_music_rounded,
                   ),
-                ),
-                subtitle: Text(
-                  '${playlist.trackCount} songs • ${playlist.description}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                  title: Text(
+                    playlist.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(
-                    Icons.play_circle_fill_rounded,
-                    color: AppColors.primary,
-                    size: 32,
+                  subtitle: Text(
+                    '${playlist.trackCount} songs • ${playlist.description}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                  onPressed: () {
-                    if (playlist.songs.isNotEmpty) {
-                      ref
-                          .read(playerNotifierProvider.notifier)
-                          .play(playlist.songs.first, queue: playlist.songs);
-                    }
-                  },
+                  trailing: IconButton(
+                    icon: const Icon(
+                      Icons.play_circle_fill_rounded,
+                      color: AppColors.primary,
+                      size: 32,
+                    ),
+                    onPressed: () {
+                      if (playlist.songs.isNotEmpty) {
+                        ref
+                            .read(playerNotifierProvider.notifier)
+                            .play(playlist.songs.first, queue: playlist.songs);
+                      }
+                    },
+                  ),
                 ),
               ),
             );
@@ -292,50 +295,53 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           itemCount: MockCatalog.artists.length,
           itemBuilder: (context, index) {
             final artist = MockCatalog.artists[index];
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
                 color: AppColors.surfaceElevated,
-                borderRadius: AppDimensions.borderRadiusLg,
-                border: Border.all(color: AppColors.surfaceBorder),
-              ),
-              child: ListTile(
-                leading: AuraArtwork(
-                  seed: artist.id + artist.name,
-                  size: 48,
-                  borderRadius: BorderRadius.circular(999),
-                  fallbackIcon: Icons.person_rounded,
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppDimensions.borderRadiusLg,
+                  side: const BorderSide(color: AppColors.surfaceBorder),
                 ),
-                title: Text(
-                  artist.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                child: ListTile(
+                  leading: AuraArtwork(
+                    seed: artist.id + artist.name,
+                    size: 48,
+                    borderRadius: BorderRadius.circular(999),
+                    fallbackIcon: Icons.person_rounded,
                   ),
-                ),
-                subtitle: Text(
-                  '${artist.genre} • ${artist.formattedListeners}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                trailing: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceHighlight,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.surfaceBorder),
-                  ),
-                  child: const Text(
-                    'Following',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  title: Text(
+                    artist.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${artist.genre} • ${artist.formattedListeners}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceHighlight,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.surfaceBorder),
+                    ),
+                    child: const Text(
+                      'Following',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
                 ),

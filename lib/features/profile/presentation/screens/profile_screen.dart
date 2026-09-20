@@ -373,35 +373,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.space8),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
+      child: Material(
         color: AppColors.surfaceElevated,
-        borderRadius: AppDimensions.borderRadiusLg,
-        border: Border.all(color: AppColors.surfaceBorder),
-      ),
-      child: SwitchListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.space16,
-          vertical: AppDimensions.space4,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppDimensions.borderRadiusLg,
+          side: const BorderSide(color: AppColors.surfaceBorder),
         ),
-        secondary: Icon(icon, color: AppColors.textSecondary, size: 22),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+        child: SwitchListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space4,
           ),
+          secondary: Icon(icon, color: AppColors.textSecondary, size: 22),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: const TextStyle(fontSize: 11, color: AppColors.textTertiary),
+          ),
+          activeTrackColor: AppColors.primary,
+          activeThumbColor: Colors.white,
+          value: value,
+          onChanged: onChanged,
         ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(fontSize: 11, color: AppColors.textTertiary),
-        ),
-        activeTrackColor: AppColors.primary,
-        activeThumbColor: Colors.white,
-        value: value,
-        onChanged: onChanged,
       ),
     );
   }
@@ -412,37 +415,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.space8),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
+      child: Material(
         color: AppColors.surfaceElevated,
-        borderRadius: AppDimensions.borderRadiusLg,
-        border: Border.all(color: AppColors.surfaceBorder),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.space16,
-          vertical: AppDimensions.space4,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppDimensions.borderRadiusLg,
+          side: const BorderSide(color: AppColors.surfaceBorder),
         ),
-        leading: Icon(icon, color: AppColors.textSecondary, size: 22),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space4,
           ),
+          leading: Icon(icon, color: AppColors.textSecondary, size: 22),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: const TextStyle(fontSize: 11, color: AppColors.textTertiary),
+          ),
+          trailing: const Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.textTertiary,
+            size: 20,
+          ),
+          onTap: onTap,
         ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(fontSize: 11, color: AppColors.textTertiary),
-        ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: AppColors.textTertiary,
-          size: 20,
-        ),
-        onTap: onTap,
       ),
     );
   }

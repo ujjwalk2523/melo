@@ -29,26 +29,25 @@ class SongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 3),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Material(
         color: isPlaying
             ? AppColors.surfaceHighlight.withValues(alpha: 0.8)
             : Colors.transparent,
-        borderRadius: AppDimensions.borderRadiusMd,
-        border: isPlaying
-            ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
-            : null,
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.space12,
-          vertical: 2,
-        ),
-        onTap: onTap,
+        clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: AppDimensions.borderRadiusMd,
+          side: isPlaying
+              ? BorderSide(color: AppColors.primary.withValues(alpha: 0.3))
+              : BorderSide.none,
         ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space12,
+            vertical: 2,
+          ),
+          onTap: onTap,
         leading: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -258,6 +257,7 @@ class SongTile extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
