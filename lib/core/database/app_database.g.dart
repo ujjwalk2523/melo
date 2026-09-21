@@ -4381,6 +4381,375 @@ class SyncMetadataTableCompanion
   }
 }
 
+class $RecommendationFeedbackTableTable extends RecommendationFeedbackTable
+    with
+        TableInfo<
+          $RecommendationFeedbackTableTable,
+          RecommendationFeedbackTableData
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecommendationFeedbackTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _feedbackTypeMeta = const VerificationMeta(
+    'feedbackType',
+  );
+  @override
+  late final GeneratedColumn<String> feedbackType = GeneratedColumn<String>(
+    'feedback_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetIdMeta = const VerificationMeta(
+    'targetId',
+  );
+  @override
+  late final GeneratedColumn<String> targetId = GeneratedColumn<String>(
+    'target_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetTypeMeta = const VerificationMeta(
+    'targetType',
+  );
+  @override
+  late final GeneratedColumn<String> targetType = GeneratedColumn<String>(
+    'target_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    feedbackType,
+    targetId,
+    targetType,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recommendation_feedback_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RecommendationFeedbackTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('feedback_type')) {
+      context.handle(
+        _feedbackTypeMeta,
+        feedbackType.isAcceptableOrUnknown(
+          data['feedback_type']!,
+          _feedbackTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_feedbackTypeMeta);
+    }
+    if (data.containsKey('target_id')) {
+      context.handle(
+        _targetIdMeta,
+        targetId.isAcceptableOrUnknown(data['target_id']!, _targetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_targetIdMeta);
+    }
+    if (data.containsKey('target_type')) {
+      context.handle(
+        _targetTypeMeta,
+        targetType.isAcceptableOrUnknown(data['target_type']!, _targetTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_targetTypeMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RecommendationFeedbackTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecommendationFeedbackTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      feedbackType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}feedback_type'],
+      )!,
+      targetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_id'],
+      )!,
+      targetType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_type'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RecommendationFeedbackTableTable createAlias(String alias) {
+    return $RecommendationFeedbackTableTable(attachedDatabase, alias);
+  }
+}
+
+class RecommendationFeedbackTableData extends DataClass
+    implements Insertable<RecommendationFeedbackTableData> {
+  final int id;
+  final String feedbackType;
+  final String targetId;
+  final String targetType;
+  final DateTime createdAt;
+  const RecommendationFeedbackTableData({
+    required this.id,
+    required this.feedbackType,
+    required this.targetId,
+    required this.targetType,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['feedback_type'] = Variable<String>(feedbackType);
+    map['target_id'] = Variable<String>(targetId);
+    map['target_type'] = Variable<String>(targetType);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  RecommendationFeedbackTableCompanion toCompanion(bool nullToAbsent) {
+    return RecommendationFeedbackTableCompanion(
+      id: Value(id),
+      feedbackType: Value(feedbackType),
+      targetId: Value(targetId),
+      targetType: Value(targetType),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory RecommendationFeedbackTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecommendationFeedbackTableData(
+      id: serializer.fromJson<int>(json['id']),
+      feedbackType: serializer.fromJson<String>(json['feedbackType']),
+      targetId: serializer.fromJson<String>(json['targetId']),
+      targetType: serializer.fromJson<String>(json['targetType']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'feedbackType': serializer.toJson<String>(feedbackType),
+      'targetId': serializer.toJson<String>(targetId),
+      'targetType': serializer.toJson<String>(targetType),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  RecommendationFeedbackTableData copyWith({
+    int? id,
+    String? feedbackType,
+    String? targetId,
+    String? targetType,
+    DateTime? createdAt,
+  }) => RecommendationFeedbackTableData(
+    id: id ?? this.id,
+    feedbackType: feedbackType ?? this.feedbackType,
+    targetId: targetId ?? this.targetId,
+    targetType: targetType ?? this.targetType,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  RecommendationFeedbackTableData copyWithCompanion(
+    RecommendationFeedbackTableCompanion data,
+  ) {
+    return RecommendationFeedbackTableData(
+      id: data.id.present ? data.id.value : this.id,
+      feedbackType: data.feedbackType.present
+          ? data.feedbackType.value
+          : this.feedbackType,
+      targetId: data.targetId.present ? data.targetId.value : this.targetId,
+      targetType: data.targetType.present
+          ? data.targetType.value
+          : this.targetType,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecommendationFeedbackTableData(')
+          ..write('id: $id, ')
+          ..write('feedbackType: $feedbackType, ')
+          ..write('targetId: $targetId, ')
+          ..write('targetType: $targetType, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, feedbackType, targetId, targetType, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecommendationFeedbackTableData &&
+          other.id == this.id &&
+          other.feedbackType == this.feedbackType &&
+          other.targetId == this.targetId &&
+          other.targetType == this.targetType &&
+          other.createdAt == this.createdAt);
+}
+
+class RecommendationFeedbackTableCompanion
+    extends UpdateCompanion<RecommendationFeedbackTableData> {
+  final Value<int> id;
+  final Value<String> feedbackType;
+  final Value<String> targetId;
+  final Value<String> targetType;
+  final Value<DateTime> createdAt;
+  const RecommendationFeedbackTableCompanion({
+    this.id = const Value.absent(),
+    this.feedbackType = const Value.absent(),
+    this.targetId = const Value.absent(),
+    this.targetType = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  RecommendationFeedbackTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String feedbackType,
+    required String targetId,
+    required String targetType,
+    this.createdAt = const Value.absent(),
+  }) : feedbackType = Value(feedbackType),
+       targetId = Value(targetId),
+       targetType = Value(targetType);
+  static Insertable<RecommendationFeedbackTableData> custom({
+    Expression<int>? id,
+    Expression<String>? feedbackType,
+    Expression<String>? targetId,
+    Expression<String>? targetType,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (feedbackType != null) 'feedback_type': feedbackType,
+      if (targetId != null) 'target_id': targetId,
+      if (targetType != null) 'target_type': targetType,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  RecommendationFeedbackTableCompanion copyWith({
+    Value<int>? id,
+    Value<String>? feedbackType,
+    Value<String>? targetId,
+    Value<String>? targetType,
+    Value<DateTime>? createdAt,
+  }) {
+    return RecommendationFeedbackTableCompanion(
+      id: id ?? this.id,
+      feedbackType: feedbackType ?? this.feedbackType,
+      targetId: targetId ?? this.targetId,
+      targetType: targetType ?? this.targetType,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (feedbackType.present) {
+      map['feedback_type'] = Variable<String>(feedbackType.value);
+    }
+    if (targetId.present) {
+      map['target_id'] = Variable<String>(targetId.value);
+    }
+    if (targetType.present) {
+      map['target_type'] = Variable<String>(targetType.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecommendationFeedbackTableCompanion(')
+          ..write('id: $id, ')
+          ..write('feedbackType: $feedbackType, ')
+          ..write('targetId: $targetId, ')
+          ..write('targetType: $targetType, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4397,6 +4766,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SyncQueueTableTable syncQueueTable = $SyncQueueTableTable(this);
   late final $SyncMetadataTableTable syncMetadataTable =
       $SyncMetadataTableTable(this);
+  late final $RecommendationFeedbackTableTable recommendationFeedbackTable =
+      $RecommendationFeedbackTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4411,6 +4782,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     playerSnapshotsTable,
     syncQueueTable,
     syncMetadataTable,
+    recommendationFeedbackTable,
   ];
 }
 
@@ -7842,6 +8214,235 @@ typedef $$SyncMetadataTableTableProcessedTableManager =
       SyncMetadataTableData,
       PrefetchHooks Function()
     >;
+typedef $$RecommendationFeedbackTableTableCreateCompanionBuilder =
+    RecommendationFeedbackTableCompanion Function({
+      Value<int> id,
+      required String feedbackType,
+      required String targetId,
+      required String targetType,
+      Value<DateTime> createdAt,
+    });
+typedef $$RecommendationFeedbackTableTableUpdateCompanionBuilder =
+    RecommendationFeedbackTableCompanion Function({
+      Value<int> id,
+      Value<String> feedbackType,
+      Value<String> targetId,
+      Value<String> targetType,
+      Value<DateTime> createdAt,
+    });
+
+class $$RecommendationFeedbackTableTableFilterComposer
+    extends Composer<_$AppDatabase, $RecommendationFeedbackTableTable> {
+  $$RecommendationFeedbackTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get feedbackType => $composableBuilder(
+    column: $table.feedbackType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetId => $composableBuilder(
+    column: $table.targetId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetType => $composableBuilder(
+    column: $table.targetType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RecommendationFeedbackTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecommendationFeedbackTableTable> {
+  $$RecommendationFeedbackTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get feedbackType => $composableBuilder(
+    column: $table.feedbackType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetId => $composableBuilder(
+    column: $table.targetId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetType => $composableBuilder(
+    column: $table.targetType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RecommendationFeedbackTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecommendationFeedbackTableTable> {
+  $$RecommendationFeedbackTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get feedbackType => $composableBuilder(
+    column: $table.feedbackType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetId =>
+      $composableBuilder(column: $table.targetId, builder: (column) => column);
+
+  GeneratedColumn<String> get targetType => $composableBuilder(
+    column: $table.targetType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$RecommendationFeedbackTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecommendationFeedbackTableTable,
+          RecommendationFeedbackTableData,
+          $$RecommendationFeedbackTableTableFilterComposer,
+          $$RecommendationFeedbackTableTableOrderingComposer,
+          $$RecommendationFeedbackTableTableAnnotationComposer,
+          $$RecommendationFeedbackTableTableCreateCompanionBuilder,
+          $$RecommendationFeedbackTableTableUpdateCompanionBuilder,
+          (
+            RecommendationFeedbackTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $RecommendationFeedbackTableTable,
+              RecommendationFeedbackTableData
+            >,
+          ),
+          RecommendationFeedbackTableData,
+          PrefetchHooks Function()
+        > {
+  $$RecommendationFeedbackTableTableTableManager(
+    _$AppDatabase db,
+    $RecommendationFeedbackTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecommendationFeedbackTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$RecommendationFeedbackTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RecommendationFeedbackTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> feedbackType = const Value.absent(),
+                Value<String> targetId = const Value.absent(),
+                Value<String> targetType = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => RecommendationFeedbackTableCompanion(
+                id: id,
+                feedbackType: feedbackType,
+                targetId: targetId,
+                targetType: targetType,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String feedbackType,
+                required String targetId,
+                required String targetType,
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => RecommendationFeedbackTableCompanion.insert(
+                id: id,
+                feedbackType: feedbackType,
+                targetId: targetId,
+                targetType: targetType,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $RecommendationFeedbackTableTable,
+                    RecommendationFeedbackTableData
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $RecommendationFeedbackTableTable,
+                    RecommendationFeedbackTableData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RecommendationFeedbackTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecommendationFeedbackTableTable,
+      RecommendationFeedbackTableData,
+      $$RecommendationFeedbackTableTableFilterComposer,
+      $$RecommendationFeedbackTableTableOrderingComposer,
+      $$RecommendationFeedbackTableTableAnnotationComposer,
+      $$RecommendationFeedbackTableTableCreateCompanionBuilder,
+      $$RecommendationFeedbackTableTableUpdateCompanionBuilder,
+      (
+        RecommendationFeedbackTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $RecommendationFeedbackTableTable,
+          RecommendationFeedbackTableData
+        >,
+      ),
+      RecommendationFeedbackTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7864,4 +8465,10 @@ class $AppDatabaseManager {
       $$SyncQueueTableTableTableManager(_db, _db.syncQueueTable);
   $$SyncMetadataTableTableTableManager get syncMetadataTable =>
       $$SyncMetadataTableTableTableManager(_db, _db.syncMetadataTable);
+  $$RecommendationFeedbackTableTableTableManager
+  get recommendationFeedbackTable =>
+      $$RecommendationFeedbackTableTableTableManager(
+        _db,
+        _db.recommendationFeedbackTable,
+      );
 }

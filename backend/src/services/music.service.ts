@@ -57,4 +57,17 @@ export class MusicService {
 
     return stream;
   }
+
+  public async getTrending(providerName?: string, limit: number = 20): Promise<Song[]> {
+    const provider = this.registry.get(providerName);
+    const result = await provider.search('trending', { limit });
+    return result.results;
+  }
+
+  public async getDiscover(genres?: string[], limit: number = 20): Promise<Song[]> {
+    const provider = this.registry.get();
+    const query = genres && genres.length > 0 && genres[0].trim() ? genres[0].trim() : 'discovery';
+    const result = await provider.search(query, { limit });
+    return result.results;
+  }
 }

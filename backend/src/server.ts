@@ -6,6 +6,7 @@ import { MusicService } from './services/music.service.js';
 import { healthRouter } from './routes/health.routes.js';
 import { createSearchRouter } from './routes/search.routes.js';
 import { createTrackRouter } from './routes/track.routes.js';
+import { createRecommendationRouter } from './routes/recommendation.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFoundHandler } from './middleware/not-found.middleware.js';
 
@@ -48,6 +49,7 @@ export function createApp(customMusicService?: MusicService): Express {
   app.use('/api', healthRouter);
   app.use('/api', createSearchRouter(musicService));
   app.use('/api', createTrackRouter(musicService));
+  app.use('/api', createRecommendationRouter(musicService));
   app.use('/api', createAuthRouter(authService));
   app.use('/api', createSyncRouter(syncService, authService));
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:melo/core/downloads/download_providers.dart';
 import 'package:melo/core/downloads/download_state.dart';
+import 'package:melo/core/recommendations/providers/recommendation_providers.dart';
 import 'package:melo/core/theme/app_colors.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
 import 'package:melo/core/utils/duration_formatter.dart';
@@ -412,6 +413,19 @@ class FullPlayerScreen extends ConsumerWidget {
                             // Download button with full state support
                             _buildDownloadButton(context, ref, song, isDownloaded),
 
+                            // More Like This button
+                            IconButton(
+                              icon: const Icon(
+                                Icons.auto_awesome_rounded,
+                                color: AppColors.textSecondary,
+                                size: 22,
+                              ),
+                              tooltip: 'More Like This',
+                              onPressed: () {
+                                _showSimilarSongsSheet(context, ref, song);
+                              },
+                            ),
+
                             // Queue button
                             IconButton(
                               icon: const Icon(
@@ -431,6 +445,92 @@ class FullPlayerScreen extends ConsumerWidget {
                   ),
                 );
               },
+        ),
+      ),
+    );
+  }
+
+  void _showSimilarSongsSheet(BuildContext context, WidgetRef ref, Song song) async {
+    final engine = ref.read(recommendationEngineProvider);
+    final similar = await engine.getSimilarSongs(song, limit: 10);
+    if (!context.mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceElevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    'More Like "${song.title}"',
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (similar.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text(
+                    'No similar tracks found in catalog.',
+                    style: TextStyle(color: AppColors.textTertiary),
+                  ),
+                ),
+              )
+            else
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: similar.length,
+                  itemBuilder: (c, i) {
+                    final item = similar[i];
+                    return ListTile(
+                      dense: true,
+                      leading: AuraArtwork(seed: item.id, imageUrl: item.artworkUrl, size: 40),
+                      title: Text(
+                        item.title,
+                        style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        item.artist,
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        maxLines: 1,
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.play_arrow_rounded, color: AppColors.primary),
+                        onPressed: () {
+                          ref.read(playerNotifierProvider.notifier).play(item);
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
         ),
       ),
     );

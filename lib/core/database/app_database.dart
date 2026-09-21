@@ -20,6 +20,7 @@ part 'app_database.g.dart';
     PlayerSnapshotsTable,
     SyncQueueTable,
     SyncMetadataTable,
+    RecommendationFeedbackTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {

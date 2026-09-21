@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:melo/core/constants/app_constants.dart';
 import 'package:melo/core/database/database_providers.dart';
 import 'package:melo/core/downloads/download_providers.dart';
+import 'package:melo/core/recommendations/providers/recommendation_providers.dart';
 import 'package:melo/core/router/app_routes.dart';
 import 'package:melo/core/sync/sync_providers.dart';
 import 'package:melo/core/sync/sync_state.dart';
@@ -385,6 +386,36 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppDimensions.space20),
 
+            // Music Intelligence & Personalization
+            _buildSectionHeader('Music Intelligence & Recommendations'),
+            _buildSettingSwitch(
+              icon: Icons.auto_awesome_rounded,
+              title: 'Personalized Recommendations',
+              subtitle: 'Tailor Home and Discovery sections to your taste',
+              value: prefs.personalizedRecommendations,
+              onChanged: (val) => notifier.setPersonalizedRecommendations(val),
+            ),
+            _buildSettingSwitch(
+              icon: Icons.history_rounded,
+              title: 'Use Listening History',
+              subtitle: 'Factor recently played tracks into music scoring',
+              value: prefs.useListeningHistoryForRecs,
+              onChanged: (val) => notifier.setUseListeningHistoryForRecs(val),
+            ),
+            _buildSettingTile(
+              icon: Icons.explore_rounded,
+              title: 'Discovery Level',
+              subtitle: 'Current mode: ${prefs.discoveryLevel.toUpperCase()}',
+              onTap: () => _showDiscoveryLevelDialog(context, ref, prefs.discoveryLevel),
+            ),
+            _buildSettingTile(
+              icon: Icons.restart_alt_rounded,
+              title: 'Reset Recommendation Profile',
+              subtitle: 'Clear all taste signals, feedback, and cached recommendations',
+              onTap: () => _confirmResetRecommendations(context, ref),
+            ),
+            const SizedBox(height: AppDimensions.space20),
+
             // Theme & Appearance
             _buildSectionHeader('Appearance & Aesthetics'),
             _buildSettingTile(
@@ -716,6 +747,90 @@ class ProfileScreen extends ConsumerWidget {
               foregroundColor: Colors.white,
             ),
             child: const Text('Clear All'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDiscoveryLevelDialog(BuildContext context, WidgetRef ref, String currentLevel) {
+    const levels = [
+      ('familiar', 'Familiar (85% familiar, 15% discovery)'),
+      ('balanced', 'Balanced (70% familiar, 30% discovery)'),
+      ('explore', 'Explore (50% familiar, 50% discovery)'),
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        title: const Text(
+          'Select Discovery Level',
+          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: levels.map((lvl) {
+            final isSelected = currentLevel.toLowerCase() == lvl.$1;
+            return ListTile(
+              title: Text(
+                lvl.$2,
+                style: TextStyle(
+                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+              trailing: isSelected ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+              onTap: () {
+                ref.read(userPreferencesNotifierProvider.notifier).setDiscoveryLevel(lvl.$1);
+                ref.read(recommendationStateProvider.notifier).refresh();
+                Navigator.of(ctx).pop();
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  void _confirmResetRecommendations(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        title: const Text(
+          'Reset Recommendation Profile?',
+          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'This will reset your local music intelligence preferences, unhide previously hidden songs, and wipe cached recommendations. Your favorites, playlists, and listening history will remain completely untouched.',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textTertiary)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              await ref.read(userPreferencesNotifierProvider.notifier).resetPersonalizationPreferences();
+              await ref.read(recommendationStateProvider.notifier).resetPersonalization();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Recommendation profile has been reset'),
+                    backgroundColor: AppColors.surfaceHighlight,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Reset'),
           ),
         ],
       ),

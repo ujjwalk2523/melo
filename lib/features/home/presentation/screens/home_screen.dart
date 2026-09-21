@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:melo/core/database/database_providers.dart';
+import 'package:melo/core/recommendations/domain/recommendation.dart';
+import 'package:melo/core/recommendations/providers/recommendation_providers.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
 import 'package:melo/features/home/presentation/widgets/albums_section.dart';
 import 'package:melo/features/home/presentation/widgets/artists_section.dart';
@@ -33,6 +35,11 @@ class HomeScreen extends ConsumerWidget {
     final featuredArtists = ref.watch(featuredArtistsProvider);
     final featuredAlbums = ref.watch(featuredAlbumsProvider);
 
+    final recState = ref.watch(recommendationStateProvider);
+    final madeForYouRecs = recState.sections[RecommendationSection.madeForYou]?.map((r) => r.song).toList() ?? [];
+    final becauseYouLikedRecs = recState.sections[RecommendationSection.becauseYouLiked]?.map((r) => r.song).toList() ?? [];
+    final discoverNewArtistsRecs = recState.sections[RecommendationSection.discoverNewArtists]?.map((r) => r.song).toList() ?? [];
+
     final playerState = ref.watch(playerNotifierProvider);
     final currentSong = playerState.currentSong;
 
@@ -40,7 +47,7 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await Future.delayed(const Duration(milliseconds: 500));
+            await ref.read(recommendationStateProvider.notifier).refresh();
           },
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -67,6 +74,34 @@ class HomeScreen extends ConsumerWidget {
               if (continueListening != null) ...[
                 SliverToBoxAdapter(
                   child: ContinueListeningBanner(song: continueListening),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppDimensions.space16),
+                ),
+              ],
+
+              // Made For You (Personalized recommendations)
+              if (madeForYouRecs.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: HorizontalSection(
+                    title: 'Made For You',
+                    subtitle: 'Tailored algorithms aligned with your listening profile',
+                    songs: madeForYouRecs,
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppDimensions.space16),
+                ),
+              ],
+
+              // Because You Liked
+              if (becauseYouLikedRecs.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: HorizontalSection(
+                    title: 'Because You Liked',
+                    subtitle: 'Echoing the rhythm and atmosphere of your favorites',
+                    songs: becauseYouLikedRecs,
+                  ),
                 ),
                 const SliverToBoxAdapter(
                   child: SizedBox(height: AppDimensions.space16),
@@ -132,6 +167,20 @@ class HomeScreen extends ConsumerWidget {
               const SliverToBoxAdapter(
                 child: SizedBox(height: AppDimensions.space16),
               ),
+
+              // Discover New Artists
+              if (discoverNewArtistsRecs.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: HorizontalSection(
+                    title: 'Discover New Artists',
+                    subtitle: 'Step beyond familiar boundaries with emerging creators',
+                    songs: discoverNewArtistsRecs,
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppDimensions.space16),
+                ),
+              ],
 
               // Top Tracks Ranked List
               const SliverToBoxAdapter(

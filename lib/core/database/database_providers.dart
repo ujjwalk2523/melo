@@ -164,6 +164,34 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     await _repo?.setDownloadOnWifiOnly(enabled);
     _enqueueSync();
   }
+
+  Future<void> setPersonalizedRecommendations(bool enabled) async {
+    state = state.copyWith(personalizedRecommendations: enabled);
+    await _repo?.setPersonalizedRecommendations(enabled);
+    _enqueueSync();
+  }
+
+  Future<void> setUseListeningHistoryForRecs(bool enabled) async {
+    state = state.copyWith(useListeningHistoryForRecs: enabled);
+    await _repo?.setUseListeningHistoryForRecs(enabled);
+    _enqueueSync();
+  }
+
+  Future<void> setDiscoveryLevel(String level) async {
+    state = state.copyWith(discoveryLevel: level);
+    await _repo?.setDiscoveryLevel(level);
+    _enqueueSync();
+  }
+
+  Future<void> resetPersonalizationPreferences() async {
+    state = state.copyWith(
+      personalizedRecommendations: true,
+      useListeningHistoryForRecs: true,
+      discoveryLevel: 'balanced',
+    );
+    await _repo?.resetPersonalizationPreferences();
+    _enqueueSync();
+  }
 }
 
 final userPreferencesNotifierProvider =

@@ -8,6 +8,9 @@ class UserPreferences {
   final double crossfadeDuration;
   final bool offlineOnly;
   final bool downloadOnWifiOnly;
+  final bool personalizedRecommendations;
+  final bool useListeningHistoryForRecs;
+  final String discoveryLevel;
 
   const UserPreferences({
     this.audioQuality = 'Hi-Res Lossless (FLAC 24-bit)',
@@ -16,6 +19,9 @@ class UserPreferences {
     this.crossfadeDuration = 3.0,
     this.offlineOnly = false,
     this.downloadOnWifiOnly = true,
+    this.personalizedRecommendations = true,
+    this.useListeningHistoryForRecs = true,
+    this.discoveryLevel = 'balanced',
   });
 
   UserPreferences copyWith({
@@ -25,6 +31,9 @@ class UserPreferences {
     double? crossfadeDuration,
     bool? offlineOnly,
     bool? downloadOnWifiOnly,
+    bool? personalizedRecommendations,
+    bool? useListeningHistoryForRecs,
+    String? discoveryLevel,
   }) {
     return UserPreferences(
       audioQuality: audioQuality ?? this.audioQuality,
@@ -33,6 +42,9 @@ class UserPreferences {
       crossfadeDuration: crossfadeDuration ?? this.crossfadeDuration,
       offlineOnly: offlineOnly ?? this.offlineOnly,
       downloadOnWifiOnly: downloadOnWifiOnly ?? this.downloadOnWifiOnly,
+      personalizedRecommendations: personalizedRecommendations ?? this.personalizedRecommendations,
+      useListeningHistoryForRecs: useListeningHistoryForRecs ?? this.useListeningHistoryForRecs,
+      discoveryLevel: discoveryLevel ?? this.discoveryLevel,
     );
   }
 }
@@ -47,6 +59,9 @@ class UserPreferencesRepository {
   static const _keyCrossfade = 'pref_crossfade';
   static const _keyOfflineOnly = 'pref_offline_only';
   static const _keyDownloadWifiOnly = 'pref_download_wifi_only';
+  static const _keyPersonalizedRecs = 'pref_personalized_recs';
+  static const _keyUseHistoryForRecs = 'pref_use_history_recs';
+  static const _keyDiscoveryLevel = 'pref_discovery_level';
 
   UserPreferencesRepository(this._prefs);
 
@@ -59,6 +74,9 @@ class UserPreferencesRepository {
       crossfadeDuration: _prefs.getDouble(_keyCrossfade) ?? 3.0,
       offlineOnly: _prefs.getBool(_keyOfflineOnly) ?? false,
       downloadOnWifiOnly: _prefs.getBool(_keyDownloadWifiOnly) ?? true,
+      personalizedRecommendations: _prefs.getBool(_keyPersonalizedRecs) ?? true,
+      useListeningHistoryForRecs: _prefs.getBool(_keyUseHistoryForRecs) ?? true,
+      discoveryLevel: _prefs.getString(_keyDiscoveryLevel) ?? 'balanced',
     );
   }
 
@@ -84,5 +102,23 @@ class UserPreferencesRepository {
 
   Future<void> setDownloadOnWifiOnly(bool enabled) async {
     await _prefs.setBool(_keyDownloadWifiOnly, enabled);
+  }
+
+  Future<void> setPersonalizedRecommendations(bool enabled) async {
+    await _prefs.setBool(_keyPersonalizedRecs, enabled);
+  }
+
+  Future<void> setUseListeningHistoryForRecs(bool enabled) async {
+    await _prefs.setBool(_keyUseHistoryForRecs, enabled);
+  }
+
+  Future<void> setDiscoveryLevel(String level) async {
+    await _prefs.setString(_keyDiscoveryLevel, level);
+  }
+
+  Future<void> resetPersonalizationPreferences() async {
+    await _prefs.remove(_keyPersonalizedRecs);
+    await _prefs.remove(_keyUseHistoryForRecs);
+    await _prefs.remove(_keyDiscoveryLevel);
   }
 }

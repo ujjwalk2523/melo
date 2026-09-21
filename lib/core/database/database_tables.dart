@@ -136,3 +136,11 @@ class SyncMetadataTable extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Stores user recommendation feedback signals (hide song, hide artist, hide genre, less like this).
+class RecommendationFeedbackTable extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get feedbackType => text()(); // 'hideSong', 'hideArtist', 'hideGenre', 'lessLikeThis', 'notInterested'
+  TextColumn get targetId => text()(); // songId, artistName, or genre
+  TextColumn get targetType => text()(); // 'song', 'artist', 'genre'
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
