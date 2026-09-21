@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:melo/core/constants/app_constants.dart';
 import 'package:melo/core/database/database_providers.dart';
+import 'package:melo/core/router/app_routes.dart';
+import 'package:melo/core/sync/sync_providers.dart';
+import 'package:melo/core/sync/sync_state.dart';
 import 'package:melo/core/theme/app_colors.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
+import 'package:melo/features/auth/providers/auth_provider.dart';
 
 /// Primary Profile and Settings screen displaying persistent user preferences, listening stats, and audio settings.
 class ProfileScreen extends ConsumerWidget {
@@ -14,6 +19,14 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(userPreferencesNotifierProvider);
     final notifier = ref.read(userPreferencesNotifierProvider.notifier);
+    final user = ref.watch(currentUserProvider);
+    final authState = ref.watch(authStateProvider);
+    final syncState = ref.watch(syncStateProvider);
+    final isAuthenticated = user != null;
+
+    final displayName = user?.displayName ?? 'Ujjwal';
+    final email = user?.email ?? 'ujjwal@melo.stream';
+    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U';
 
     return Scaffold(
       body: SafeArea(
@@ -38,84 +51,180 @@ class ProfileScreen extends ConsumerWidget {
                   width: 1.2,
                 ),
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  Container(
-                    width: 68,
-                    height: 68,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.secondary],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.4),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
+                  Row(
+                    children: [
+                      Container(
+                        width: 68,
+                        height: 68,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(
+                            colors: [AppColors.primary, AppColors.secondary],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.4),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'U',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                        child: Center(
+                          child: Text(
+                            initial,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: AppDimensions.space16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              displayName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              email,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: AppDimensions.space8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: AppColors.primary.withValues(alpha: 0.5),
+                                ),
+                              ),
+                              child: Text(
+                                isAuthenticated
+                                    ? 'MELO HI-FI CLOUD'
+                                    : 'MELO HI-FI UNLIMITED',
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: AppDimensions.space16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: AppDimensions.space16),
+                  const Divider(color: AppColors.surfaceBorder),
+                  const SizedBox(height: AppDimensions.space8),
+                  // Sync Status Row & Actions
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            syncState.status == SyncStatus.syncing
+                                ? Icons.sync_rounded
+                                : syncState.status == SyncStatus.offline
+                                    ? Icons.cloud_off_rounded
+                                    : syncState.status == SyncStatus.error
+                                        ? Icons.sync_problem_rounded
+                                        : Icons.cloud_done_rounded,
+                            size: 16,
+                            color: syncState.status == SyncStatus.error
+                                ? Colors.redAccent
+                                : syncState.status == SyncStatus.offline
+                                    ? Colors.orangeAccent
+                                    : AppColors.secondary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            syncState.humanReadableStatus,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (isAuthenticated)
+                        TextButton.icon(
+                          onPressed: syncState.status == SyncStatus.syncing
+                              ? null
+                              : () => ref
+                                  .read(syncStateProvider.notifier)
+                                  .syncNow(authState.accessToken, user.id),
+                          icon: const Icon(Icons.refresh_rounded, size: 16),
+                          label: const Text('Sync Now', style: TextStyle(fontSize: 12)),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.secondary,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          ),
+                        )
+                      else
+                        ElevatedButton.icon(
+                          onPressed: () => context.push(AppRoutes.login),
+                          icon: const Icon(Icons.login_rounded, size: 16),
+                          label: const Text('Sign In', style: TextStyle(fontSize: 12)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (isAuthenticated) ...[
+                    const SizedBox(height: AppDimensions.space8),
+                    Row(
                       children: [
-                        const Text(
-                          'Ujjwal',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          'ujjwal@melo.stream',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: AppDimensions.space8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.5),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => ref.read(authStateProvider.notifier).logout(),
+                            icon: const Icon(Icons.logout_rounded, size: 16),
+                            label: const Text('Log Out', style: TextStyle(fontSize: 12)),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.textSecondary,
+                              side: const BorderSide(color: AppColors.surfaceBorder),
                             ),
                           ),
-                          child: const Text(
-                            'MELO HI-FI UNLIMITED',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                              letterSpacing: 0.8,
-                            ),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: () => _confirmAccountDeletion(context, ref),
+                          icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
+                          label: const Text('Delete Account',
+                              style: TextStyle(fontSize: 12, color: Colors.redAccent)),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.5)),
                           ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -514,6 +623,50 @@ class ProfileScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  void _confirmAccountDeletion(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        title: const Text(
+          'Delete Cloud Account?',
+          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'This action permanently deletes your cloud account and all synchronized cloud records. Your local library and music on this device will be preserved.',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textTertiary)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final success = await ref.read(authStateProvider.notifier).deleteAccount();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success
+                        ? 'Account deleted successfully'
+                        : 'Failed to delete account. Please try again.'),
+                    backgroundColor: AppColors.surfaceHighlight,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Confirm Delete'),
+          ),
+        ],
+      ),
     );
   }
 }

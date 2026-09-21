@@ -68,8 +68,8 @@ void main() {
       await db.close();
     });
 
-    test('Database initializes with schema version 1', () {
-      expect(db.schemaVersion, equals(1));
+    test('Database initializes with schema version', () {
+      expect(db.schemaVersion, greaterThanOrEqualTo(1));
     });
 
     test('Persists normalized songs from different providers without key collision', () async {

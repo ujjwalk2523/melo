@@ -20,6 +20,12 @@ const envSchema = z.object({
   // Jamendo Configuration (Optional credentials)
   JAMENDO_API_URL: z.string().url().default('https://api.jamendo.com/v3.0'),
   JAMENDO_CLIENT_ID: z.string().optional().default(''),
+
+  // Auth & Cloud Database Configuration
+  JWT_SECRET: z.string().default('melo_secret_jwt_key_development_2026'),
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_ANON_KEY: z.string().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

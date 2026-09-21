@@ -17,6 +17,10 @@ import 'package:melo/features/profile/data/user_preferences_repository.dart';
 import 'package:melo/shared/models/song.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:melo/core/sync/sync_engine.dart';
+import 'package:melo/core/sync/sync_providers.dart';
+import 'package:melo/features/auth/providers/auth_provider.dart';
+
 /// Database instance provider. Uses in-memory database during tests.
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -26,22 +30,45 @@ final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return db;
 });
 
+String? _safeReadToken(Ref ref) {
+  try {
+    return ref.read(authStateProvider).accessToken;
+  } catch (_) {
+    return null;
+  }
+}
+
 /// Favorites repository provider.
 final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
-  return FavoritesRepositoryImpl(db);
+  final syncEngine = ref.watch(syncEngineProvider);
+  return FavoritesRepositoryImpl(
+    db,
+    syncEngine,
+    () => _safeReadToken(ref),
+  );
 });
 
 /// History repository provider.
 final historyRepositoryProvider = Provider<HistoryRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
-  return HistoryRepositoryImpl(db);
+  final syncEngine = ref.watch(syncEngineProvider);
+  return HistoryRepositoryImpl(
+    db,
+    syncEngine,
+    () => _safeReadToken(ref),
+  );
 });
 
 /// Playlist repository provider.
 final playlistRepositoryProvider = Provider<PlaylistRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
-  return PlaylistRepositoryImpl(db);
+  final syncEngine = ref.watch(syncEngineProvider);
+  return PlaylistRepositoryImpl(
+    db,
+    syncEngine,
+    () => _safeReadToken(ref),
+  );
 });
 
 /// Download metadata repository provider.
@@ -75,45 +102,79 @@ final userPreferencesRepositoryProvider = Provider<UserPreferencesRepository?>((
 /// StateNotifier for reactive user preferences in Profile screen.
 class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
   final UserPreferencesRepository? _repo;
+  final SyncEngine? _syncEngine;
+  final String? Function()? _getAuthToken;
 
-  UserPreferencesNotifier(this._repo)
-    : super(_repo?.getPreferences() ?? const UserPreferences());
+  UserPreferencesNotifier(
+    this._repo, [
+    this._syncEngine,
+    this._getAuthToken,
+  ]) : super(_repo?.getPreferences() ?? const UserPreferences());
+
+  void _enqueueSync() {
+    _syncEngine?.enqueueOperation(
+      id: 'op_pref_${DateTime.now().millisecondsSinceEpoch}',
+      entityType: 'preference',
+      entityId: 'preferences',
+      operationType: 'upsert',
+      payload: {
+        'audioQuality': state.audioQuality,
+        'gaplessPlayback': state.gaplessPlayback,
+        'normalizeVolume': state.normalizeVolume,
+        'crossfadeDuration': state.crossfadeDuration,
+        'offlineOnly': state.offlineOnly,
+        'downloadOnWifiOnly': state.downloadOnWifiOnly,
+      },
+      authToken: _getAuthToken?.call(),
+    );
+  }
 
   Future<void> setAudioQuality(String quality) async {
     state = state.copyWith(audioQuality: quality);
     await _repo?.setAudioQuality(quality);
+    _enqueueSync();
   }
 
   Future<void> setGaplessPlayback(bool enabled) async {
     state = state.copyWith(gaplessPlayback: enabled);
     await _repo?.setGaplessPlayback(enabled);
+    _enqueueSync();
   }
 
   Future<void> setNormalizeVolume(bool enabled) async {
     state = state.copyWith(normalizeVolume: enabled);
     await _repo?.setNormalizeVolume(enabled);
+    _enqueueSync();
   }
 
   Future<void> setCrossfadeDuration(double seconds) async {
     state = state.copyWith(crossfadeDuration: seconds);
     await _repo?.setCrossfadeDuration(seconds);
+    _enqueueSync();
   }
 
   Future<void> setOfflineOnly(bool enabled) async {
     state = state.copyWith(offlineOnly: enabled);
     await _repo?.setOfflineOnly(enabled);
+    _enqueueSync();
   }
 
   Future<void> setDownloadOnWifiOnly(bool enabled) async {
     state = state.copyWith(downloadOnWifiOnly: enabled);
     await _repo?.setDownloadOnWifiOnly(enabled);
+    _enqueueSync();
   }
 }
 
 final userPreferencesNotifierProvider =
     StateNotifierProvider<UserPreferencesNotifier, UserPreferences>((ref) {
       final repo = ref.watch(userPreferencesRepositoryProvider);
-      return UserPreferencesNotifier(repo);
+      final syncEngine = ref.watch(syncEngineProvider);
+      return UserPreferencesNotifier(
+        repo,
+        syncEngine,
+        () => _safeReadToken(ref),
+      );
     });
 
 /// Reactive stream of favorited song IDs for instant O(1) checks in UI.

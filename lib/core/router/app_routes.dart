@@ -5,6 +5,11 @@ abstract final class AppRoutes {
   static const String library = '/library';
   static const String profile = '/profile';
 
+  // Phase 7 Authentication Routes
+  static const String login = '/login';
+  static const String register = '/register';
+  static const String forgotPassword = '/forgot-password';
+
   // Future Detail & Player Routes (Prepared for subsequent phases)
   static const String player = '/player/:songId';
   static const String artist = '/artist/:artistId';

@@ -18,6 +18,8 @@ part 'app_database.g.dart';
     PlaylistSongsTable,
     DownloadsTable,
     PlayerSnapshotsTable,
+    SyncQueueTable,
+    SyncMetadataTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -28,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -36,7 +38,12 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
     },
     onUpgrade: (Migrator m, int from, int to) async {
-      // Future schema migrations will preserve user data.
+      if (from < 2) {
+        // Migration from schema v1 to v2:
+        // Preserves all existing Phase 6 data untouched and adds sync tables.
+        await m.createTable(syncQueueTable);
+        await m.createTable(syncMetadataTable);
+      }
     },
   );
 }

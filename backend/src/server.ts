@@ -9,6 +9,12 @@ import { createTrackRouter } from './routes/track.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFoundHandler } from './middleware/not-found.middleware.js';
 
+import { getCloudStore } from './db/cloud-store.factory.js';
+import { AuthService } from './auth/auth.service.js';
+import { SyncService } from './sync/sync.service.js';
+import { createAuthRouter } from './routes/auth.routes.js';
+import { createSyncRouter } from './routes/sync.routes.js';
+
 export function createApp(): Express {
   const app = express();
 
@@ -24,7 +30,7 @@ export function createApp(): Express {
         }
         return callback(null, true); // Permissive in dev mode for local emulator testing
       },
-      methods: ['GET', 'POST', 'OPTIONS'],
+      methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     })
   );
@@ -34,11 +40,16 @@ export function createApp(): Express {
   // Instantiate services
   const registry = new ProviderRegistry();
   const musicService = new MusicService(registry);
+  const cloudStore = getCloudStore();
+  const authService = new AuthService(cloudStore);
+  const syncService = new SyncService(cloudStore);
 
   // Mount API routers
   app.use('/api', healthRouter);
   app.use('/api', createSearchRouter(musicService));
   app.use('/api', createTrackRouter(musicService));
+  app.use('/api', createAuthRouter(authService));
+  app.use('/api', createSyncRouter(syncService, authService));
 
   // 404 and error handlers
   app.use(notFoundHandler);

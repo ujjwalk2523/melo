@@ -104,3 +104,34 @@ class PlayerSnapshotsTable extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+/// Durable sync queue table storing pending cloud sync operations.
+class SyncQueueTable extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().nullable()();
+  TextColumn get entityType => text()(); // 'favorite', 'playlist', 'playlist_song', 'history', 'preference'
+  TextColumn get entityId => text()();
+  TextColumn get operationType => text()(); // 'upsert', 'delete'
+  TextColumn get payload => text().withDefault(const Constant('{}'))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  IntColumn get retryCount => integer().withDefault(const Constant(0))();
+  TextColumn get lastError => text().nullable()();
+  TextColumn get status => text().withDefault(const Constant('pending'))(); // 'pending', 'syncing', 'failed', 'completed'
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Sync metadata table tracking timestamps and synchronization status.
+class SyncMetadataTable extends Table {
+  TextColumn get id => text()(); // 'default'
+  DateTimeColumn get lastSuccessfulSyncAt => dateTime().nullable()();
+  DateTimeColumn get lastAttemptedSyncAt => dateTime().nullable()();
+  IntColumn get pendingOperationCount => integer().withDefault(const Constant(0))();
+  TextColumn get lastSyncError => text().nullable()();
+  IntColumn get serverRevision => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+

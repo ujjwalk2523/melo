@@ -1,14 +1,17 @@
 import 'package:drift/drift.dart';
 import 'package:melo/core/database/app_database.dart';
 import 'package:melo/core/database/database_converters.dart';
+import 'package:melo/core/sync/sync_engine.dart';
 import 'package:melo/features/playlists/domain/playlist_models.dart';
 import 'package:melo/features/playlists/domain/playlist_repository.dart';
 import 'package:melo/shared/models/song.dart';
 
 class PlaylistRepositoryImpl implements PlaylistRepository {
   final AppDatabase _db;
+  final SyncEngine? _syncEngine;
+  final String? Function()? _getAuthToken;
 
-  PlaylistRepositoryImpl(this._db);
+  PlaylistRepositoryImpl(this._db, [this._syncEngine, this._getAuthToken]);
 
   String _validatePlaylistName(String name) {
     final trimmed = name.trim();
@@ -41,6 +44,19 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
           ),
         );
 
+    await _syncEngine?.enqueueOperation(
+      id: 'op_pl_create_${playlistId}_${now.millisecondsSinceEpoch}',
+      entityType: 'playlist',
+      entityId: playlistId,
+      operationType: 'upsert',
+      payload: {
+        'name': validName,
+        'description': description?.trim(),
+        'createdAt': now.toIso8601String(),
+      },
+      authToken: _getAuthToken?.call(),
+    );
+
     return Playlist(
       id: playlistId,
       name: validName,
@@ -61,13 +77,29 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       throw ArgumentError('Playlist with ID "$id" does not exist.');
     }
 
+    final now = DateTime.now();
     await (_db.update(
       _db.playlistsTable,
     )..where((tbl) => tbl.id.equals(id))).write(
       PlaylistsTableCompanion(
         name: Value(validName),
-        updatedAt: Value(DateTime.now()),
+        updatedAt: Value(now),
       ),
+    );
+
+    await _syncEngine?.enqueueOperation(
+      id: 'op_pl_rename_${id}_${now.millisecondsSinceEpoch}',
+      entityType: 'playlist',
+      entityId: id,
+      operationType: 'upsert',
+      payload: {
+        'name': validName,
+        'description': exists.description,
+        'artworkUrl': exists.artworkUrl,
+        'createdAt': exists.createdAt.toIso8601String(),
+        'updatedAt': now.toIso8601String(),
+      },
+      authToken: _getAuthToken?.call(),
     );
   }
 
@@ -84,6 +116,15 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
         _db.playlistsTable,
       )..where((tbl) => tbl.id.equals(id))).go();
     });
+
+    await _syncEngine?.enqueueOperation(
+      id: 'op_pl_del_${id}_${DateTime.now().millisecondsSinceEpoch}',
+      entityType: 'playlist',
+      entityId: id,
+      operationType: 'delete',
+      payload: {},
+      authToken: _getAuthToken?.call(),
+    );
   }
 
   @override
@@ -97,6 +138,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       throw ArgumentError('Playlist with ID "$playlistId" does not exist.');
     }
 
+    int nextPos = 0;
     await _db.transaction(() async {
       // 2. Ensure song metadata exists in SongsTable
       await _db
@@ -121,7 +163,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
         _db.playlistSongsTable,
       )..where((tbl) => tbl.playlistId.equals(playlistId))).get();
 
-      final nextPos = songsInPlaylist.length;
+      nextPos = songsInPlaylist.length;
 
       // 5. Insert playlist song
       await _db
@@ -140,6 +182,28 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
             ..where((tbl) => tbl.id.equals(playlistId)))
           .write(PlaylistsTableCompanion(updatedAt: Value(DateTime.now())));
     });
+
+    await _syncEngine?.enqueueOperation(
+      id: 'op_pl_song_add_${playlistId}_${song.id}_${DateTime.now().millisecondsSinceEpoch}',
+      entityType: 'playlist_song',
+      entityId: song.id,
+      operationType: 'upsert',
+      payload: {
+        'playlistId': playlistId,
+        'position': nextPos,
+        'metadata': {
+          'id': song.id,
+          'title': song.title,
+          'artist': song.artist,
+          'album': song.album,
+          'artworkUrl': song.artworkUrl,
+          'durationMs': song.duration.inMilliseconds,
+          'streamUrl': song.streamUrl,
+          'provider': song.provider,
+        },
+      },
+      authToken: _getAuthToken?.call(),
+    );
   }
 
   @override
@@ -153,6 +217,15 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
     await (_db.update(_db.playlistsTable)
           ..where((tbl) => tbl.id.equals(playlistId)))
         .write(PlaylistsTableCompanion(updatedAt: Value(DateTime.now())));
+
+    await _syncEngine?.enqueueOperation(
+      id: 'op_pl_song_del_${playlistId}_${songId}_${DateTime.now().millisecondsSinceEpoch}',
+      entityType: 'playlist_song',
+      entityId: songId,
+      operationType: 'delete',
+      payload: {'playlistId': playlistId},
+      authToken: _getAuthToken?.call(),
+    );
   }
 
   @override
