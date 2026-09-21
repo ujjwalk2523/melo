@@ -32,6 +32,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> restoreSession() async {
     state = state.copyWith(status: AuthStatus.authenticating);
     final restored = await _repository.restoreSession();
+    if (!mounted) return;
     state = restored;
     if (restored.isAuthenticated && restored.accessToken != null) {
       _syncEngine?.performLoginSync(restored.accessToken!, restored.user!.id);

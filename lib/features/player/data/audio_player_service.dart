@@ -49,6 +49,9 @@ abstract class AudioPlayerService {
   /// Loads and prepares an authorized audio stream URL.
   Future<Duration?> setUrl(String url);
 
+  /// Loads and prepares an authorized local audio file path for offline playback.
+  Future<Duration?> setFilePath(String filePath);
+
   /// Starts or resumes playback.
   Future<void> play();
 
@@ -119,6 +122,15 @@ class JustAudioPlayerService implements AudioPlayerService {
   }
 
   @override
+  Future<Duration?> setFilePath(String filePath) async {
+    try {
+      return await _player.setFilePath(filePath);
+    } catch (e) {
+      throw Exception('Audio engine failed to load local file: $e');
+    }
+  }
+
+  @override
   Future<void> play() => _player.play();
 
   @override
@@ -172,8 +184,26 @@ class FakeAudioPlayerService implements AudioPlayerService {
   @override
   bool get isPlaying => _isPlaying;
 
+  String? lastLoadedUrl;
+  String? lastLoadedPath;
+
   @override
   Future<Duration?> setUrl(String url) async {
+    lastLoadedUrl = url;
+    lastLoadedPath = null;
+    _currentDuration = const Duration(minutes: 3, seconds: 30);
+    _status = AudioProcessingStatus.ready;
+    _stateController.add(
+      AudioEngineState(isPlaying: _isPlaying, processingStatus: _status),
+    );
+    _durationController.add(_currentDuration);
+    return _currentDuration;
+  }
+
+  @override
+  Future<Duration?> setFilePath(String filePath) async {
+    lastLoadedPath = filePath;
+    lastLoadedUrl = null;
     _currentDuration = const Duration(minutes: 3, seconds: 30);
     _status = AudioProcessingStatus.ready;
     _stateController.add(

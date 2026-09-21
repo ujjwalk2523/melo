@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:melo/core/constants/app_constants.dart';
 import 'package:melo/core/database/database_providers.dart';
+import 'package:melo/core/downloads/download_providers.dart';
 import 'package:melo/core/router/app_routes.dart';
 import 'package:melo/core/sync/sync_providers.dart';
 import 'package:melo/core/sync/sync_state.dart';
@@ -23,6 +24,8 @@ class ProfileScreen extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final syncState = ref.watch(syncStateProvider);
     final isAuthenticated = user != null;
+    final storageBytes = ref.watch(downloadStorageSizeProvider).valueOrNull ?? 0;
+    final mbUsed = (storageBytes / (1024 * 1024)).toStringAsFixed(1);
 
     final displayName = user?.displayName ?? 'Ujjwal';
     final email = user?.email ?? 'ujjwal@melo.stream';
@@ -374,6 +377,12 @@ class ProfileScreen extends ConsumerWidget {
                 );
               },
             ),
+            _buildSettingTile(
+              icon: Icons.download_done_rounded,
+              title: 'Clear All Downloads',
+              subtitle: 'Currently using $mbUsed MB of offline music storage',
+              onTap: () => _confirmClearDownloads(context, ref),
+            ),
             const SizedBox(height: AppDimensions.space20),
 
             // Theme & Appearance
@@ -664,6 +673,49 @@ class ProfileScreen extends ConsumerWidget {
               foregroundColor: Colors.white,
             ),
             child: const Text('Confirm Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmClearDownloads(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        title: const Text(
+          'Clear All Downloads?',
+          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'This will delete all offline downloaded tracks from your device. You can re-download authorized tracks at any time.',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textTertiary)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              await ref.read(downloadManagerProvider).clearAllDownloads();
+              ref.invalidate(downloadStorageSizeProvider);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('All downloaded tracks have been cleared'),
+                    backgroundColor: AppColors.surfaceHighlight,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Clear All'),
           ),
         ],
       ),

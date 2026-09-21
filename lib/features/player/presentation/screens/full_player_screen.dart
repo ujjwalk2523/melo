@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:melo/core/downloads/download_providers.dart';
+import 'package:melo/core/downloads/download_state.dart';
 import 'package:melo/core/theme/app_colors.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
 import 'package:melo/core/utils/duration_formatter.dart';
+import 'package:melo/features/downloads/domain/download_metadata_repository.dart';
 import 'package:melo/features/player/providers/player_provider.dart';
+import 'package:melo/shared/models/song.dart';
 import 'package:melo/shared/widgets/aura_artwork.dart';
 
 import '../widgets/queue_sheet.dart';
@@ -405,37 +409,8 @@ class FullPlayerScreen extends ConsumerWidget {
                           ),
                         ),
 
-                        Row(
-                          children: [
-                            // Download placeholder button
-                            IconButton(
-                              icon: Icon(
-                                isDownloaded
-                                    ? Icons.download_done_rounded
-                                    : Icons.download_rounded,
-                                color: isDownloaded
-                                    ? AppColors.tertiary
-                                    : AppColors.textSecondary,
-                                size: 22,
-                              ),
-                              tooltip: isDownloaded
-                                  ? 'Downloaded (Offline)'
-                                  : 'Download',
-                              onPressed: () {
-                                ref
-                                    .read(playerNotifierProvider.notifier)
-                                    .toggleDownload(song.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      isDownloaded ? 'Removed from downloads' : 'Downloaded for offline playback (mock)',
-                                    ),
-                                    duration: const Duration(seconds: 1),
-                                    backgroundColor: AppColors.surfaceHighlight,
-                                  ),
-                                );
-                              },
-                            ),
+                            // Download button with full state support
+                            _buildDownloadButton(context, ref, song, isDownloaded),
 
                             // Queue button
                             IconButton(
@@ -451,15 +426,143 @@ class FullPlayerScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          },
+                );
+              },
         ),
       ),
+    );
+  }
+
+  Widget _buildDownloadButton(
+    BuildContext context,
+    WidgetRef ref,
+    Song song,
+    bool isDownloaded,
+  ) {
+    if (!song.isDownloadable) {
+      return IconButton(
+        icon: const Icon(
+          Icons.download_rounded,
+          color: AppColors.textTertiary,
+          size: 22,
+        ),
+        tooltip: "Offline download isn't available for this track.",
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Offline download isn't available for this track."),
+              duration: Duration(seconds: 2),
+              backgroundColor: AppColors.surfaceHighlight,
+            ),
+          );
+        },
+      );
+    }
+
+    final downloadAsync = ref.watch(trackDownloadStateProvider(song.id));
+    final dlState = downloadAsync.valueOrNull ??
+        (isDownloaded
+            ? TrackDownloadState(
+                songId: song.id,
+                status: DownloadStatus.completed,
+                progress: 1.0,
+              )
+            : TrackDownloadState.notDownloaded(song.id));
+
+    final manager = ref.read(downloadManagerProvider);
+
+    if (dlState.isDownloading) {
+      return SizedBox(
+        width: 40,
+        height: 40,
+        child: IconButton(
+          icon: Stack(
+            alignment: Alignment.center,
+            children: [
+              CircularProgressIndicator(
+                value: dlState.progress > 0 ? dlState.progress : null,
+                strokeWidth: 2.2,
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.secondary),
+              ),
+              Text(
+                '${(dlState.progress * 100).toInt()}%',
+                style: const TextStyle(
+                  fontSize: 8,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          tooltip: 'Cancel Download (${(dlState.progress * 100).toInt()}%)',
+          onPressed: () => manager.cancelDownload(song.id),
+        ),
+      );
+    }
+
+    if (dlState.isCompleted || isDownloaded) {
+      return IconButton(
+        icon: const Icon(
+          Icons.download_done_rounded,
+          color: AppColors.tertiary,
+          size: 22,
+        ),
+        tooltip: 'Downloaded (Offline)',
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (dialogCtx) => AlertDialog(
+              backgroundColor: AppColors.surfaceElevated,
+              title: const Text('Remove Download?'),
+              content: Text('Remove "${song.title}" from offline downloads?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogCtx).pop(),
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                ),
+                FilledButton(
+                  style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                  onPressed: () {
+                    Navigator.of(dialogCtx).pop();
+                    manager.removeDownload(song);
+                    ref.read(playerNotifierProvider.notifier).toggleDownload(song.id, song);
+                  },
+                  child: const Text('Remove'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+
+    if (dlState.isFailed) {
+      return IconButton(
+        icon: const Icon(
+          Icons.refresh_rounded,
+          color: AppColors.error,
+          size: 22,
+        ),
+        tooltip: 'Download failed. Tap to retry.',
+        onPressed: () => manager.retryDownload(song),
+      );
+    }
+
+    // Not downloaded yet
+    return IconButton(
+      icon: const Icon(
+        Icons.download_rounded,
+        color: AppColors.textSecondary,
+        size: 22,
+      ),
+      tooltip: 'Download for offline playback',
+      onPressed: () {
+        manager.downloadTrack(song);
+        ref.read(playerNotifierProvider.notifier).toggleDownload(song.id, song);
+      },
     );
   }
 }

@@ -15,7 +15,7 @@ import { SyncService } from './sync/sync.service.js';
 import { createAuthRouter } from './routes/auth.routes.js';
 import { createSyncRouter } from './routes/sync.routes.js';
 
-export function createApp(): Express {
+export function createApp(customMusicService?: MusicService): Express {
   const app = express();
 
   // Configure CORS
@@ -39,7 +39,7 @@ export function createApp(): Express {
 
   // Instantiate services
   const registry = new ProviderRegistry();
-  const musicService = new MusicService(registry);
+  const musicService = customMusicService || new MusicService(registry);
   const cloudStore = getCloudStore();
   const authService = new AuthService(cloudStore);
   const syncService = new SyncService(cloudStore);

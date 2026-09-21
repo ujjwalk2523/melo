@@ -16,6 +16,7 @@ class DownloadMetadataRepositoryImpl implements DownloadMetadataRepository {
     String? localPath,
     int downloadedBytes = 0,
     int totalBytes = 0,
+    String? errorMessage,
   }) async {
     await _db.transaction(() async {
       // 1. Ensure song metadata exists
@@ -35,6 +36,7 @@ class DownloadMetadataRepositoryImpl implements DownloadMetadataRepository {
               localPath: Value(localPath),
               downloadedBytes: Value(downloadedBytes),
               totalBytes: Value(totalBytes),
+              errorMessage: Value(errorMessage),
               createdAt: Value(DateTime.now()),
               updatedAt: Value(DateTime.now()),
             ),
@@ -43,15 +45,26 @@ class DownloadMetadataRepositoryImpl implements DownloadMetadataRepository {
   }
 
   @override
-  Future<void> updateStatus(String songId, DownloadStatus status) async {
+  Future<void> updateStatus(
+    String songId,
+    DownloadStatus status, {
+    String? errorMessage,
+    int? downloadedBytes,
+    int? totalBytes,
+    String? localPath,
+  }) async {
+    final companion = DownloadsTableCompanion(
+      status: Value(status.name),
+      updatedAt: Value(DateTime.now()),
+      errorMessage: errorMessage != null ? Value(errorMessage) : const Value.absent(),
+      downloadedBytes: downloadedBytes != null ? Value(downloadedBytes) : const Value.absent(),
+      totalBytes: totalBytes != null ? Value(totalBytes) : const Value.absent(),
+      localPath: localPath != null ? Value(localPath) : const Value.absent(),
+    );
+
     await (_db.update(
       _db.downloadsTable,
-    )..where((tbl) => tbl.songId.equals(songId))).write(
-      DownloadsTableCompanion(
-        status: Value(status.name),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
+    )..where((tbl) => tbl.songId.equals(songId))).write(companion);
   }
 
   @override
@@ -110,6 +123,7 @@ class DownloadMetadataRepositoryImpl implements DownloadMetadataRepository {
       localPath: row.localPath,
       downloadedBytes: row.downloadedBytes,
       totalBytes: row.totalBytes,
+      errorMessage: row.errorMessage,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     );

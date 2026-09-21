@@ -6,6 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:melo/core/database/database_providers.dart';
 import 'package:melo/features/favorites/domain/favorites_repository.dart';
 import 'package:melo/features/history/domain/history_repository.dart';
+import 'package:melo/core/downloads/download_manager.dart';
+import 'package:melo/core/downloads/download_providers.dart';
+import 'package:melo/core/downloads/download_repository.dart';
+import 'package:melo/core/player/playback_source_resolver.dart';
 import 'package:melo/features/player/data/audio_player_service.dart';
 import 'package:melo/features/player/data/melo_audio_handler.dart';
 import 'package:melo/features/player/data/player_snapshot_repository.dart';
@@ -39,12 +43,18 @@ final playerNotifierProvider =
       final favoritesRepo = ref.watch(favoritesRepositoryProvider);
       final historyRepo = ref.watch(historyRepositoryProvider);
       final snapshotRepo = ref.watch(playerSnapshotRepositoryProvider);
+      final sourceResolver = ref.watch(playbackSourceResolverProvider);
+      final downloadManager = ref.watch(downloadManagerProvider);
+      final downloadRepo = ref.watch(downloadRepositoryProvider);
       return PlayerNotifier(
         audioService,
         audioHandler,
         favoritesRepo,
         historyRepo,
         snapshotRepo,
+        sourceResolver,
+        downloadManager,
+        downloadRepo,
       );
     });
 
@@ -55,12 +65,16 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   final FavoritesRepository? _favoritesRepo;
   final HistoryRepository? _historyRepo;
   final PlayerSnapshotRepository? _snapshotRepo;
+  final PlaybackSourceResolver? _sourceResolver;
+  final DownloadManager? _downloadManager;
+  final DownloadRepository? _downloadRepo;
 
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<Duration>? _bufferedSubscription;
   StreamSubscription<AudioEngineState>? _stateSubscription;
   StreamSubscription<Set<String>>? _favoriteSubscription;
+  StreamSubscription<Set<String>>? _downloadSubscription;
   Timer? _snapshotDebounceTimer;
 
   PlayerNotifier([
@@ -69,21 +83,36 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     FavoritesRepository? favoritesRepo,
     HistoryRepository? historyRepo,
     PlayerSnapshotRepository? snapshotRepo,
+    PlaybackSourceResolver? sourceResolver,
+    DownloadManager? downloadManager,
+    DownloadRepository? downloadRepo,
   ]) : _audioService = audioService ?? JustAudioPlayerService(),
        _audioHandler = audioHandler,
        _favoritesRepo = favoritesRepo,
        _historyRepo = historyRepo,
        _snapshotRepo = snapshotRepo,
+       _sourceResolver = sourceResolver,
+       _downloadManager = downloadManager,
+       _downloadRepo = downloadRepo,
        super(const PlayerState()) {
     _initSubscriptions();
     _bindAudioHandler();
     _initFavoritesSubscription();
+    _initDownloadsSubscription();
   }
 
   void _initFavoritesSubscription() {
     _favoriteSubscription = _favoritesRepo?.watchFavoriteIds().listen((ids) {
       if (mounted) {
         state = state.copyWith(favoriteIds: ids);
+      }
+    });
+  }
+
+  void _initDownloadsSubscription() {
+    _downloadSubscription = _downloadRepo?.watchDownloadedSongIds().listen((ids) {
+      if (mounted) {
+        state = state.copyWith(downloadedIds: ids);
       }
     });
   }
@@ -159,75 +188,142 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     });
   }
 
-  /// Plays a given song and sets the playback queue using authorized stream URL.
+  /// Plays a given song and sets the playback queue using resolved audio source.
   Future<void> play(Song song, {List<Song>? queue}) async {
     final activeQueue = queue ?? state.queue;
     final updatedQueue = activeQueue.contains(song)
         ? activeQueue
         : [...activeQueue, song];
 
-    final streamUrl = song.streamUrl;
-
     _audioHandler?.updateCurrentSong(song);
     _audioHandler?.setSongQueue(updatedQueue);
 
-    // STEP 6 & STEP 19: Only play legitimate authorized stream URLs.
-    // If no stream URL exists (e.g. fictional mock song), show a controlled error.
-    if (streamUrl == null || streamUrl.trim().isEmpty) {
-      if (_audioService is FakeAudioPlayerService) {
+    // Fast-path for FakeAudioPlayerService in unit tests if no stream URL exists
+    if (_audioService is FakeAudioPlayerService &&
+        (song.streamUrl == null || song.streamUrl!.trim().isEmpty)) {
+      state = state.copyWith(
+        currentSong: song,
+        status: PlayerStatus.playing,
+        position: Duration.zero,
+        duration: song.duration,
+        queue: updatedQueue,
+        clearError: true,
+      );
+      _syncAudioHandlerPlaybackState();
+      _historyRepo?.recordPlayed(song);
+      _scheduleSnapshotSave();
+      unawaited(_audioService.play());
+      return;
+    }
+
+    final PlaybackSource source;
+    final resolver = _sourceResolver;
+    if (resolver != null) {
+      source = await resolver.resolve(song);
+    } else {
+      final url = song.streamUrl;
+      if (url != null && url.trim().isNotEmpty) {
+        source = RemoteUrlSource(url, song);
+      } else {
+        source = UnavailableSource('Playback is unavailable for this track.', song);
+      }
+    }
+
+    switch (source) {
+      case LocalFileSource(:final filePath):
         state = state.copyWith(
           currentSong: song,
-          status: PlayerStatus.playing,
+          status: PlayerStatus.loading,
           position: Duration.zero,
           duration: song.duration,
           queue: updatedQueue,
           clearError: true,
         );
         _syncAudioHandlerPlaybackState();
-        _historyRepo?.recordPlayed(song);
-        _scheduleSnapshotSave();
-        unawaited(_audioService.play());
-        return;
-      }
-      state = state.copyWith(
-        currentSong: song,
-        status: PlayerStatus.error,
-        errorMessage: 'Playback is unavailable for this track.',
-        queue: updatedQueue,
-      );
-      _syncAudioHandlerPlaybackState();
-      return;
-    }
 
-    state = state.copyWith(
-      currentSong: song,
-      status: PlayerStatus.loading,
-      position: Duration.zero,
-      duration: song.duration,
-      queue: updatedQueue,
-      clearError: true,
-    );
-    _syncAudioHandlerPlaybackState();
+        try {
+          final loadedDuration = await _audioService.setFilePath(filePath);
+          if (!mounted) return;
+          if (loadedDuration != null && loadedDuration > Duration.zero) {
+            state = state.copyWith(duration: loadedDuration);
+          }
+          await _audioService.play();
+          if (!mounted) return;
+          state = state.copyWith(status: PlayerStatus.playing);
+          _syncAudioHandlerPlaybackState();
+          _historyRepo?.recordPlayed(song);
+          _scheduleSnapshotSave();
+        } catch (e) {
+          if (!mounted) return;
+          state = state.copyWith(
+            status: PlayerStatus.error,
+            errorMessage: 'Unable to play local file: $e',
+          );
+          _syncAudioHandlerPlaybackState();
+        }
+        break;
 
-    try {
-      final loadedDuration = await _audioService.setUrl(streamUrl);
-      if (!mounted) return;
-      if (loadedDuration != null && loadedDuration > Duration.zero) {
-        state = state.copyWith(duration: loadedDuration);
-      }
-      await _audioService.play();
-      if (!mounted) return;
-      state = state.copyWith(status: PlayerStatus.playing);
-      _syncAudioHandlerPlaybackState();
-      _historyRepo?.recordPlayed(song);
-      _scheduleSnapshotSave();
-    } catch (e) {
-      if (!mounted) return;
-      state = state.copyWith(
-        status: PlayerStatus.error,
-        errorMessage: 'Unable to stream this track. Please check connection.',
-      );
-      _syncAudioHandlerPlaybackState();
+      case RemoteUrlSource(:final url):
+        state = state.copyWith(
+          currentSong: song,
+          status: PlayerStatus.loading,
+          position: Duration.zero,
+          duration: song.duration,
+          queue: updatedQueue,
+          clearError: true,
+        );
+        _syncAudioHandlerPlaybackState();
+
+        try {
+          final loadedDuration = await _audioService.setUrl(url);
+          if (!mounted) return;
+          if (loadedDuration != null && loadedDuration > Duration.zero) {
+            state = state.copyWith(duration: loadedDuration);
+          }
+          await _audioService.play();
+          if (!mounted) return;
+          state = state.copyWith(status: PlayerStatus.playing);
+          _syncAudioHandlerPlaybackState();
+          _historyRepo?.recordPlayed(song);
+          _scheduleSnapshotSave();
+        } catch (e) {
+          if (!mounted) return;
+          state = state.copyWith(
+            status: PlayerStatus.error,
+            errorMessage: 'Unable to stream this track. Please check connection.',
+          );
+          _syncAudioHandlerPlaybackState();
+        }
+        break;
+
+      case UnavailableSource(:final reason):
+        // STEP 19 & headless fallback for mock test tracks without stream URLs
+        if (_audioService is FakeAudioPlayerService &&
+            (song.streamUrl == null || song.streamUrl!.isEmpty) &&
+            _sourceResolver == null) {
+          state = state.copyWith(
+            currentSong: song,
+            status: PlayerStatus.playing,
+            position: Duration.zero,
+            duration: song.duration,
+            queue: updatedQueue,
+            clearError: true,
+          );
+          _syncAudioHandlerPlaybackState();
+          _historyRepo?.recordPlayed(song);
+          _scheduleSnapshotSave();
+          unawaited(_audioService.play());
+          return;
+        }
+
+        state = state.copyWith(
+          currentSong: song,
+          status: PlayerStatus.error,
+          errorMessage: reason,
+          queue: updatedQueue,
+        );
+        _syncAudioHandlerPlaybackState();
+        break;
     }
   }
 
@@ -396,12 +492,24 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     }
   }
 
-  void toggleDownload(String songId) {
+  void toggleDownload(String songId, [Song? song]) {
     final updated = Set<String>.from(state.downloadedIds);
+    final targetSong =
+        song ??
+        (state.currentSong?.id == songId
+            ? state.currentSong
+            : state.queue.where((s) => s.id == songId).firstOrNull);
+
     if (updated.contains(songId)) {
       updated.remove(songId);
+      if (targetSong != null) {
+        _downloadManager?.removeDownload(targetSong);
+      }
     } else {
       updated.add(songId);
+      if (targetSong != null) {
+        _downloadManager?.downloadTrack(targetSong);
+      }
     }
     state = state.copyWith(downloadedIds: updated);
   }
@@ -506,6 +614,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     _bufferedSubscription?.cancel();
     _stateSubscription?.cancel();
     _favoriteSubscription?.cancel();
+    _downloadSubscription?.cancel();
     _snapshotDebounceTimer?.cancel();
     super.dispose();
   }

@@ -2280,6 +2280,17 @@ class $DownloadsTableTable extends DownloadsTable
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _errorMessageMeta = const VerificationMeta(
+    'errorMessage',
+  );
+  @override
+  late final GeneratedColumn<String> errorMessage = GeneratedColumn<String>(
+    'error_message',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2312,6 +2323,7 @@ class $DownloadsTableTable extends DownloadsTable
     localPath,
     downloadedBytes,
     totalBytes,
+    errorMessage,
     createdAt,
     updatedAt,
   ];
@@ -2367,6 +2379,15 @@ class $DownloadsTableTable extends DownloadsTable
         totalBytes.isAcceptableOrUnknown(data['total_bytes']!, _totalBytesMeta),
       );
     }
+    if (data.containsKey('error_message')) {
+      context.handle(
+        _errorMessageMeta,
+        errorMessage.isAcceptableOrUnknown(
+          data['error_message']!,
+          _errorMessageMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2416,6 +2437,10 @@ class $DownloadsTableTable extends DownloadsTable
         DriftSqlType.int,
         data['${effectivePrefix}total_bytes'],
       )!,
+      errorMessage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_message'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2441,6 +2466,7 @@ class DownloadsTableData extends DataClass
   final String? localPath;
   final int downloadedBytes;
   final int totalBytes;
+  final String? errorMessage;
   final DateTime createdAt;
   final DateTime updatedAt;
   const DownloadsTableData({
@@ -2450,6 +2476,7 @@ class DownloadsTableData extends DataClass
     this.localPath,
     required this.downloadedBytes,
     required this.totalBytes,
+    this.errorMessage,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -2464,6 +2491,9 @@ class DownloadsTableData extends DataClass
     }
     map['downloaded_bytes'] = Variable<int>(downloadedBytes);
     map['total_bytes'] = Variable<int>(totalBytes);
+    if (!nullToAbsent || errorMessage != null) {
+      map['error_message'] = Variable<String>(errorMessage);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -2479,6 +2509,9 @@ class DownloadsTableData extends DataClass
           : Value(localPath),
       downloadedBytes: Value(downloadedBytes),
       totalBytes: Value(totalBytes),
+      errorMessage: errorMessage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorMessage),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -2496,6 +2529,7 @@ class DownloadsTableData extends DataClass
       localPath: serializer.fromJson<String?>(json['localPath']),
       downloadedBytes: serializer.fromJson<int>(json['downloadedBytes']),
       totalBytes: serializer.fromJson<int>(json['totalBytes']),
+      errorMessage: serializer.fromJson<String?>(json['errorMessage']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -2510,6 +2544,7 @@ class DownloadsTableData extends DataClass
       'localPath': serializer.toJson<String?>(localPath),
       'downloadedBytes': serializer.toJson<int>(downloadedBytes),
       'totalBytes': serializer.toJson<int>(totalBytes),
+      'errorMessage': serializer.toJson<String?>(errorMessage),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -2522,6 +2557,7 @@ class DownloadsTableData extends DataClass
     Value<String?> localPath = const Value.absent(),
     int? downloadedBytes,
     int? totalBytes,
+    Value<String?> errorMessage = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => DownloadsTableData(
@@ -2531,6 +2567,7 @@ class DownloadsTableData extends DataClass
     localPath: localPath.present ? localPath.value : this.localPath,
     downloadedBytes: downloadedBytes ?? this.downloadedBytes,
     totalBytes: totalBytes ?? this.totalBytes,
+    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -2546,6 +2583,9 @@ class DownloadsTableData extends DataClass
       totalBytes: data.totalBytes.present
           ? data.totalBytes.value
           : this.totalBytes,
+      errorMessage: data.errorMessage.present
+          ? data.errorMessage.value
+          : this.errorMessage,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2560,6 +2600,7 @@ class DownloadsTableData extends DataClass
           ..write('localPath: $localPath, ')
           ..write('downloadedBytes: $downloadedBytes, ')
           ..write('totalBytes: $totalBytes, ')
+          ..write('errorMessage: $errorMessage, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2574,6 +2615,7 @@ class DownloadsTableData extends DataClass
     localPath,
     downloadedBytes,
     totalBytes,
+    errorMessage,
     createdAt,
     updatedAt,
   );
@@ -2587,6 +2629,7 @@ class DownloadsTableData extends DataClass
           other.localPath == this.localPath &&
           other.downloadedBytes == this.downloadedBytes &&
           other.totalBytes == this.totalBytes &&
+          other.errorMessage == this.errorMessage &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2598,6 +2641,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
   final Value<String?> localPath;
   final Value<int> downloadedBytes;
   final Value<int> totalBytes;
+  final Value<String?> errorMessage;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -2608,6 +2652,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
     this.localPath = const Value.absent(),
     this.downloadedBytes = const Value.absent(),
     this.totalBytes = const Value.absent(),
+    this.errorMessage = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2619,6 +2664,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
     this.localPath = const Value.absent(),
     this.downloadedBytes = const Value.absent(),
     this.totalBytes = const Value.absent(),
+    this.errorMessage = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2631,6 +2677,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
     Expression<String>? localPath,
     Expression<int>? downloadedBytes,
     Expression<int>? totalBytes,
+    Expression<String>? errorMessage,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2642,6 +2689,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
       if (localPath != null) 'local_path': localPath,
       if (downloadedBytes != null) 'downloaded_bytes': downloadedBytes,
       if (totalBytes != null) 'total_bytes': totalBytes,
+      if (errorMessage != null) 'error_message': errorMessage,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2655,6 +2703,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
     Value<String?>? localPath,
     Value<int>? downloadedBytes,
     Value<int>? totalBytes,
+    Value<String?>? errorMessage,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -2666,6 +2715,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
       localPath: localPath ?? this.localPath,
       downloadedBytes: downloadedBytes ?? this.downloadedBytes,
       totalBytes: totalBytes ?? this.totalBytes,
+      errorMessage: errorMessage ?? this.errorMessage,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2693,6 +2743,9 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
     if (totalBytes.present) {
       map['total_bytes'] = Variable<int>(totalBytes.value);
     }
+    if (errorMessage.present) {
+      map['error_message'] = Variable<String>(errorMessage.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2714,6 +2767,7 @@ class DownloadsTableCompanion extends UpdateCompanion<DownloadsTableData> {
           ..write('localPath: $localPath, ')
           ..write('downloadedBytes: $downloadedBytes, ')
           ..write('totalBytes: $totalBytes, ')
+          ..write('errorMessage: $errorMessage, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -6524,6 +6578,7 @@ typedef $$DownloadsTableTableCreateCompanionBuilder =
       Value<String?> localPath,
       Value<int> downloadedBytes,
       Value<int> totalBytes,
+      Value<String?> errorMessage,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -6536,6 +6591,7 @@ typedef $$DownloadsTableTableUpdateCompanionBuilder =
       Value<String?> localPath,
       Value<int> downloadedBytes,
       Value<int> totalBytes,
+      Value<String?> errorMessage,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -6603,6 +6659,11 @@ class $$DownloadsTableTableFilterComposer
 
   ColumnFilters<int> get totalBytes => $composableBuilder(
     column: $table.totalBytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6674,6 +6735,11 @@ class $$DownloadsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -6733,6 +6799,11 @@ class $$DownloadsTableTableAnnotationComposer
 
   GeneratedColumn<int> get totalBytes => $composableBuilder(
     column: $table.totalBytes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
     builder: (column) => column,
   );
 
@@ -6802,6 +6873,7 @@ class $$DownloadsTableTableTableManager
                 Value<String?> localPath = const Value.absent(),
                 Value<int> downloadedBytes = const Value.absent(),
                 Value<int> totalBytes = const Value.absent(),
+                Value<String?> errorMessage = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6812,6 +6884,7 @@ class $$DownloadsTableTableTableManager
                 localPath: localPath,
                 downloadedBytes: downloadedBytes,
                 totalBytes: totalBytes,
+                errorMessage: errorMessage,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -6824,6 +6897,7 @@ class $$DownloadsTableTableTableManager
                 Value<String?> localPath = const Value.absent(),
                 Value<int> downloadedBytes = const Value.absent(),
                 Value<int> totalBytes = const Value.absent(),
+                Value<String?> errorMessage = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6834,6 +6908,7 @@ class $$DownloadsTableTableTableManager
                 localPath: localPath,
                 downloadedBytes: downloadedBytes,
                 totalBytes: totalBytes,
+                errorMessage: errorMessage,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

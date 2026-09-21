@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:melo/core/database/database_providers.dart';
+import 'package:melo/core/downloads/download_providers.dart';
 import 'package:melo/core/theme/app_colors.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
 import 'package:melo/features/player/providers/player_provider.dart';
@@ -109,9 +110,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         .toList();
     final likedSongs = [...dbFavorites, ...mockFavorites];
 
-    final downloadedSongs = MockCatalog.songs
-        .where((s) => playerState.downloadedIds.contains(s.id))
+    final realDownloadedSongs =
+        ref.watch(downloadedSongsProvider).valueOrNull ?? [];
+    final mockDownloaded = MockCatalog.songs
+        .where(
+          (s) =>
+              playerState.downloadedIds.contains(s.id) &&
+              !realDownloadedSongs.any((r) => r.id == s.id),
+        )
         .toList();
+    final downloadedSongs = [...realDownloadedSongs, ...mockDownloaded];
 
     return Scaffold(
       body: SafeArea(

@@ -30,5 +30,42 @@ export function createTrackController(musicService: MusicService) {
         next(error);
       }
     },
+
+    getDownloadInfo: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const { provider, trackId } = req.params;
+        const song = await musicService.getTrack(provider, trackId);
+
+        if (!song) {
+          res.status(404).json({
+            success: false,
+            error: {
+              code: 'TRACK_NOT_FOUND',
+              message: `Track not found: ${provider}:${trackId}`,
+            },
+          });
+          return;
+        }
+
+        res.status(200).json({
+          success: true,
+          data: {
+            provider,
+            trackId: song.providerTrackId || trackId,
+            songId: song.id,
+            title: song.title,
+            artist: song.artist,
+            isDownloadable: song.isDownloadable,
+            downloadUrl: song.downloadUrl || null,
+            expiresAt: null,
+            restrictions: song.isDownloadable
+              ? null
+              : 'Provider does not authorize offline downloading for this track',
+          },
+        });
+      } catch (error) {
+        next(error);
+      }
+    },
   };
 }

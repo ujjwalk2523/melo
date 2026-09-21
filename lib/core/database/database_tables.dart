@@ -78,6 +78,7 @@ class DownloadsTable extends Table {
   TextColumn get localPath => text().nullable()();
   IntColumn get downloadedBytes => integer().withDefault(const Constant(0))();
   IntColumn get totalBytes => integer().withDefault(const Constant(0))();
+  TextColumn get errorMessage => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
