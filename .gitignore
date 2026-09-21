@@ -51,3 +51,22 @@ app.*.map.json
 backend/node_modules/
 backend/dist/
 backend/.env
+
+# Secrets, Environment & Keystores
+.env
+.env.*
+*.env
+*.jks
+*.keystore
+key.properties
+local.properties
+*.pem
+*.key
+*.db
+*.sqlite
+*.part
+
+# Android build outputs
+*.apk
+*.aab
+

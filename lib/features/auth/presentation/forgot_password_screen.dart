@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
@@ -10,7 +11,8 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
@@ -34,7 +36,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     });
 
     final email = _emailController.text.trim();
-    final message = await ref.read(authStateProvider.notifier).forgotPassword(email);
+    final message = await ref
+        .read(authStateProvider.notifier)
+        .forgotPassword(email);
 
     if (mounted) {
       setState(() {
@@ -52,7 +56,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -65,7 +72,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space24),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.space24,
+            ),
             child: Form(
               key: _formKey,
               child: Column(
@@ -79,7 +88,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.surfaceElevated,
-                        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: AppColors.secondary.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: const Center(
                         child: Icon(
@@ -115,15 +126,22 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     Container(
                       padding: const EdgeInsets.all(AppDimensions.space16),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceHighlight.withValues(alpha: 0.5),
+                        color: AppColors.surfaceHighlight.withValues(
+                          alpha: 0.5,
+                        ),
                         borderRadius: AppDimensions.borderRadiusMd,
-                        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.4)),
+                        border: Border.all(
+                          color: AppColors.secondary.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.mark_email_read_rounded,
-                              color: AppColors.secondary, size: 24),
+                          const Icon(
+                            Icons.mark_email_read_rounded,
+                            color: AppColors.secondary,
+                            size: 24,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
@@ -146,21 +164,33 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         labelText: 'Email Address',
-                        labelStyle: const TextStyle(color: AppColors.textSecondary),
-                        prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textTertiary),
+                        labelStyle: const TextStyle(
+                          color: AppColors.textSecondary,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.email_outlined,
+                          color: AppColors.textTertiary,
+                        ),
                         filled: true,
                         fillColor: AppColors.surfaceElevated,
                         border: OutlineInputBorder(
                           borderRadius: AppDimensions.borderRadiusMd,
-                          borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                          borderSide: const BorderSide(
+                            color: AppColors.surfaceBorder,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: AppDimensions.borderRadiusMd,
-                          borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                          borderSide: const BorderSide(
+                            color: AppColors.surfaceBorder,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: AppDimensions.borderRadiusMd,
-                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                       validator: (value) {

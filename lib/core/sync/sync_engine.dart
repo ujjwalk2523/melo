@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_initializing_formals
 import 'dart:async';
+
 import 'package:drift/drift.dart';
+
 import '../database/app_database.dart';
 import '../../features/profile/data/user_preferences_repository.dart';
 import 'sync_conflict_resolver.dart';
@@ -25,10 +27,10 @@ class SyncEngine {
     required SyncQueue queue,
     required SyncRepository api,
     UserPreferencesRepository? preferencesRepo,
-  })  : _db = db,
-        _queue = queue,
-        _api = api,
-        _preferencesRepo = preferencesRepo {
+  }) : _db = db,
+       _queue = queue,
+       _api = api,
+       _preferencesRepo = preferencesRepo {
     _loadInitialMetadata();
   }
 
@@ -46,19 +48,21 @@ class SyncEngine {
   Future<void> _loadInitialMetadata() async {
     if (_isDisposed) return;
     try {
-      final meta = await (_db.select(_db.syncMetadataTable)
-            ..where((tbl) => tbl.id.equals('default')))
-          .getSingleOrNull();
+      final meta = await (_db.select(
+        _db.syncMetadataTable,
+      )..where((tbl) => tbl.id.equals('default'))).getSingleOrNull();
 
       final pending = await _queue.getPendingCount();
 
-      _updateState(_state.copyWith(
-        lastSuccessfulSyncAt: meta?.lastSuccessfulSyncAt,
-        lastAttemptedSyncAt: meta?.lastAttemptedSyncAt,
-        pendingCount: pending,
-        status: pending > 0 ? SyncStatus.pending : SyncStatus.idle,
-        lastError: meta?.lastSyncError,
-      ));
+      _updateState(
+        _state.copyWith(
+          lastSuccessfulSyncAt: meta?.lastSuccessfulSyncAt,
+          lastAttemptedSyncAt: meta?.lastAttemptedSyncAt,
+          pendingCount: pending,
+          status: pending > 0 ? SyncStatus.pending : SyncStatus.idle,
+          lastError: meta?.lastSyncError,
+        ),
+      );
     } catch (_) {}
   }
 
@@ -91,10 +95,9 @@ class SyncEngine {
 
       if (_isDisposed) return;
       final pending = await _queue.getPendingCount();
-      _updateState(_state.copyWith(
-        pendingCount: pending,
-        status: SyncStatus.pending,
-      ));
+      _updateState(
+        _state.copyWith(pendingCount: pending, status: SyncStatus.pending),
+      );
 
       // If authenticated, debounce push to avoid flooding backend
       if (authToken != null && authToken.isNotEmpty) {
@@ -116,11 +119,13 @@ class SyncEngine {
   Future<void> performLoginSync(String authToken, String userId) async {
     if (_isSyncing) return;
     _isSyncing = true;
-    _updateState(_state.copyWith(
-      status: SyncStatus.syncing,
-      lastAttemptedSyncAt: DateTime.now(),
-      clearError: true,
-    ));
+    _updateState(
+      _state.copyWith(
+        status: SyncStatus.syncing,
+        lastAttemptedSyncAt: DateTime.now(),
+        clearError: true,
+      ),
+    );
 
     try {
       // 1. Pull cloud state
@@ -135,18 +140,30 @@ class SyncEngine {
         if (!isDeleted) {
           // Ensure normalized song metadata is cached in SongsTable
           if (metadata.isNotEmpty) {
-            await _db.into(_db.songsTable).insertOnConflictUpdate(
+            await _db
+                .into(_db.songsTable)
+                .insertOnConflictUpdate(
                   SongsTableCompanion(
                     id: Value(songId),
                     provider: Value(metadata['provider'] as String? ?? 'melo'),
-                    providerTrackId: Value(metadata['providerTrackId'] as String?),
-                    title: Value(metadata['title'] as String? ?? 'Unknown Title'),
-                    artist: Value(metadata['artist'] as String? ?? 'Unknown Artist'),
-                    album: Value(metadata['album'] as String? ?? 'Unknown Album'),
+                    providerTrackId: Value(
+                      metadata['providerTrackId'] as String?,
+                    ),
+                    title: Value(
+                      metadata['title'] as String? ?? 'Unknown Title',
+                    ),
+                    artist: Value(
+                      metadata['artist'] as String? ?? 'Unknown Artist',
+                    ),
+                    album: Value(
+                      metadata['album'] as String? ?? 'Unknown Album',
+                    ),
                     artworkUrl: Value(metadata['artworkUrl'] as String? ?? ''),
                     durationMs: Value(metadata['durationMs'] as int? ?? 180000),
                     streamUrl: Value(metadata['streamUrl'] as String?),
-                    isDownloadable: Value(metadata['isDownloadable'] as bool? ?? false),
+                    isDownloadable: Value(
+                      metadata['isDownloadable'] as bool? ?? false,
+                    ),
                     genre: Value(metadata['genre'] as String?),
                     updatedAt: Value(DateTime.now()),
                   ),
@@ -154,12 +171,14 @@ class SyncEngine {
           }
 
           // Insert into local FavoritesTable if not present
-          final existing = await (_db.select(_db.favoritesTable)
-                ..where((tbl) => tbl.songId.equals(songId)))
-              .getSingleOrNull();
+          final existing = await (_db.select(
+            _db.favoritesTable,
+          )..where((tbl) => tbl.songId.equals(songId))).getSingleOrNull();
 
           if (existing == null) {
-            await _db.into(_db.favoritesTable).insert(
+            await _db
+                .into(_db.favoritesTable)
+                .insert(
                   FavoritesTableCompanion.insert(
                     songId: songId,
                     createdAt: Value(
@@ -179,11 +198,13 @@ class SyncEngine {
         final isDeleted = pl['isDeleted'] as bool? ?? false;
 
         if (isDeleted) {
-          await (_db.delete(_db.playlistsTable)
-                ..where((tbl) => tbl.id.equals(playlistId)))
-              .go();
+          await (_db.delete(
+            _db.playlistsTable,
+          )..where((tbl) => tbl.id.equals(playlistId))).go();
         } else {
-          await _db.into(_db.playlistsTable).insertOnConflictUpdate(
+          await _db
+              .into(_db.playlistsTable)
+              .insertOnConflictUpdate(
                 PlaylistsTableCompanion(
                   id: Value(playlistId),
                   name: Value(pl['name'] as String? ?? 'Untitled'),
@@ -213,7 +234,9 @@ class SyncEngine {
 
         // Ensure song exists in SongsTable
         if (metadata.isNotEmpty) {
-          await _db.into(_db.songsTable).insertOnConflictUpdate(
+          await _db
+              .into(_db.songsTable)
+              .insertOnConflictUpdate(
                 SongsTableCompanion(
                   id: Value(songId),
                   provider: Value(metadata['provider'] as String? ?? 'melo'),
@@ -227,13 +250,18 @@ class SyncEngine {
         }
 
         // Insert into playlist_songs
-        final exists = await (_db.select(_db.playlistSongsTable)
-              ..where((tbl) =>
-                  tbl.playlistId.equals(playlistId) & tbl.songId.equals(songId)))
-            .getSingleOrNull();
+        final exists =
+            await (_db.select(_db.playlistSongsTable)..where(
+                  (tbl) =>
+                      tbl.playlistId.equals(playlistId) &
+                      tbl.songId.equals(songId),
+                ))
+                .getSingleOrNull();
 
         if (exists == null) {
-          await _db.into(_db.playlistSongsTable).insert(
+          await _db
+              .into(_db.playlistSongsTable)
+              .insert(
                 PlaylistSongsTableCompanion.insert(
                   playlistId: playlistId,
                   songId: songId,
@@ -251,12 +279,14 @@ class SyncEngine {
             ? DateTime.parse(h['playedAt'] as String)
             : DateTime.now();
 
-        final existing = await (_db.select(_db.listeningHistoryTable)
-              ..where((tbl) => tbl.songId.equals(songId)))
-            .getSingleOrNull();
+        final existing = await (_db.select(
+          _db.listeningHistoryTable,
+        )..where((tbl) => tbl.songId.equals(songId))).getSingleOrNull();
 
         if (existing == null) {
-          await _db.into(_db.listeningHistoryTable).insert(
+          await _db
+              .into(_db.listeningHistoryTable)
+              .insert(
                 ListeningHistoryTableCompanion.insert(
                   songId: songId,
                   playedAt: Value(playedAt),
@@ -270,9 +300,9 @@ class SyncEngine {
             cloudPlayCount: count,
             cloudPlayedAt: playedAt,
           );
-          await (_db.update(_db.listeningHistoryTable)
-                ..where((tbl) => tbl.id.equals(existing.id)))
-              .write(
+          await (_db.update(
+            _db.listeningHistoryTable,
+          )..where((tbl) => tbl.id.equals(existing.id))).write(
             ListeningHistoryTableCompanion(
               playCount: Value(merged.playCount),
               playedAt: Value(merged.playedAt),
@@ -290,10 +320,14 @@ class SyncEngine {
           await _preferencesRepo.setAudioQuality(p['audioQuality'] as String);
         }
         if (p['gaplessPlayback'] != null) {
-          await _preferencesRepo.setGaplessPlayback(p['gaplessPlayback'] as bool);
+          await _preferencesRepo.setGaplessPlayback(
+            p['gaplessPlayback'] as bool,
+          );
         }
         if (p['normalizeVolume'] != null) {
-          await _preferencesRepo.setNormalizeVolume(p['normalizeVolume'] as bool);
+          await _preferencesRepo.setNormalizeVolume(
+            p['normalizeVolume'] as bool,
+          );
         }
         if (p['crossfadeDuration'] != null) {
           final cd = (p['crossfadeDuration'] as num).toDouble();
@@ -306,7 +340,9 @@ class SyncEngine {
 
       // 8. Record successful sync metadata
       final now = DateTime.now();
-      await _db.into(_db.syncMetadataTable).insertOnConflictUpdate(
+      await _db
+          .into(_db.syncMetadataTable)
+          .insertOnConflictUpdate(
             SyncMetadataTableCompanion(
               id: const Value('default'),
               lastSuccessfulSyncAt: Value(now),
@@ -316,24 +352,29 @@ class SyncEngine {
             ),
           );
 
-      _updateState(_state.copyWith(
-        status: SyncStatus.success,
-        lastSuccessfulSyncAt: now,
-        lastAttemptedSyncAt: now,
-        pendingCount: 0,
-        clearError: true,
-      ));
+      _updateState(
+        _state.copyWith(
+          status: SyncStatus.success,
+          lastSuccessfulSyncAt: now,
+          lastAttemptedSyncAt: now,
+          pendingCount: 0,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       final now = DateTime.now();
       final errStr = e.toString();
-      final isOffline = errStr.toLowerCase().contains('offline') ||
+      final isOffline =
+          errStr.toLowerCase().contains('offline') ||
           errStr.toLowerCase().contains('cannot reach server');
 
-      _updateState(_state.copyWith(
-        status: isOffline ? SyncStatus.offline : SyncStatus.error,
-        lastAttemptedSyncAt: now,
-        lastError: errStr,
-      ));
+      _updateState(
+        _state.copyWith(
+          status: isOffline ? SyncStatus.offline : SyncStatus.error,
+          lastAttemptedSyncAt: now,
+          lastError: errStr,
+        ),
+      );
     } finally {
       _isSyncing = false;
     }
@@ -350,7 +391,9 @@ class SyncEngine {
       final now = DateTime.now();
       final remaining = await _queue.getPendingCount();
 
-      await _db.into(_db.syncMetadataTable).insertOnConflictUpdate(
+      await _db
+          .into(_db.syncMetadataTable)
+          .insertOnConflictUpdate(
             SyncMetadataTableCompanion(
               id: const Value('default'),
               lastSuccessfulSyncAt: Value(now),
@@ -360,21 +403,26 @@ class SyncEngine {
             ),
           );
 
-      _updateState(_state.copyWith(
-        status: remaining > 0 ? SyncStatus.pending : SyncStatus.success,
-        lastSuccessfulSyncAt: now,
-        pendingCount: remaining,
-        clearError: true,
-      ));
+      _updateState(
+        _state.copyWith(
+          status: remaining > 0 ? SyncStatus.pending : SyncStatus.success,
+          lastSuccessfulSyncAt: now,
+          pendingCount: remaining,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       final errStr = e.toString();
-      final isOffline = errStr.toLowerCase().contains('offline') ||
+      final isOffline =
+          errStr.toLowerCase().contains('offline') ||
           errStr.toLowerCase().contains('cannot reach server');
 
-      _updateState(_state.copyWith(
-        status: isOffline ? SyncStatus.offline : SyncStatus.error,
-        lastError: errStr,
-      ));
+      _updateState(
+        _state.copyWith(
+          status: isOffline ? SyncStatus.offline : SyncStatus.error,
+          lastError: errStr,
+        ),
+      );
     } finally {
       _isSyncing = false;
     }
@@ -394,5 +442,15 @@ class SyncEngine {
       return;
     }
     await performLoginSync(authToken, userId);
+  }
+
+  /// Clears queued operations, resets sync metadata and local sync state on logout.
+  Future<void> resetSyncData() async {
+    _debounceTimer?.cancel();
+    try {
+      await _queue.clearAll();
+      await (_db.delete(_db.syncMetadataTable)).go();
+    } catch (_) {}
+    _updateState(const SyncState());
   }
 }

@@ -1,13 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 import { MusicService } from '../services/music.service.js';
+
+const searchQuerySchema = z.object({
+  q: z.string().default(''),
+  provider: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+});
 
 export function createSearchController(musicService: MusicService) {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const q = typeof req.query.q === 'string' ? req.query.q : '';
-      const provider = typeof req.query.provider === 'string' ? req.query.provider : undefined;
-      const limit = typeof req.query.limit === 'string' ? parseInt(req.query.limit, 10) : undefined;
+      const parsed = searchQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        res.status(400).json({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid search query parameters',
+            details: parsed.error.flatten().fieldErrors,
+          },
+        });
+        return;
+      }
 
+      const { q, provider, limit } = parsed.data;
       const results = await musicService.search(q, provider, { limit });
 
       res.status(200).json({

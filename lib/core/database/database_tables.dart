@@ -117,7 +117,9 @@ class SyncQueueTable extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   IntColumn get retryCount => integer().withDefault(const Constant(0))();
   TextColumn get lastError => text().nullable()();
-  TextColumn get status => text().withDefault(const Constant('pending'))(); // 'pending', 'syncing', 'failed', 'completed'
+  TextColumn get status => text().withDefault(
+    const Constant('pending'),
+  )(); // 'pending', 'syncing', 'failed', 'completed'
 
   @override
   Set<Column> get primaryKey => {id};
@@ -128,7 +130,8 @@ class SyncMetadataTable extends Table {
   TextColumn get id => text()(); // 'default'
   DateTimeColumn get lastSuccessfulSyncAt => dateTime().nullable()();
   DateTimeColumn get lastAttemptedSyncAt => dateTime().nullable()();
-  IntColumn get pendingOperationCount => integer().withDefault(const Constant(0))();
+  IntColumn get pendingOperationCount =>
+      integer().withDefault(const Constant(0))();
   TextColumn get lastSyncError => text().nullable()();
   IntColumn get serverRevision => integer().withDefault(const Constant(0))();
 

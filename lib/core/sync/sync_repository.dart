@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
+
 import '../network/api_config.dart';
 import 'sync_queue.dart';
 
@@ -35,9 +37,12 @@ class CloudSyncData {
 
   factory CloudSyncData.fromJson(Map<String, dynamic> json) {
     return CloudSyncData(
-      favorites: (json['favorites'] as List? ?? []).cast<Map<String, dynamic>>(),
-      playlists: (json['playlists'] as List? ?? []).cast<Map<String, dynamic>>(),
-      playlistSongs: (json['playlistSongs'] as List? ?? []).cast<Map<String, dynamic>>(),
+      favorites: (json['favorites'] as List? ?? [])
+          .cast<Map<String, dynamic>>(),
+      playlists: (json['playlists'] as List? ?? [])
+          .cast<Map<String, dynamic>>(),
+      playlistSongs: (json['playlistSongs'] as List? ?? [])
+          .cast<Map<String, dynamic>>(),
       history: (json['history'] as List? ?? []).cast<Map<String, dynamic>>(),
       preferences: json['preferences'] as Map<String, dynamic>?,
       metadata: json['metadata'] as Map<String, dynamic>? ?? {},
@@ -53,14 +58,14 @@ class SyncRepository {
   final String _baseUrl;
 
   SyncRepository({http.Client? client, String? baseUrl})
-      : _client = client ?? http.Client(),
-        _baseUrl = baseUrl ?? ApiConfig.baseUrl;
+    : _client = client ?? http.Client(),
+      _baseUrl = baseUrl ?? ApiConfig.baseUrl;
 
   Map<String, String> _headers(String token) => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
 
   Future<CloudSyncData> pullState(String token) async {
     try {
@@ -85,7 +90,10 @@ class SyncRepository {
     }
   }
 
-  Future<int> pushOperations(String token, List<SyncQueueOperation> operations) async {
+  Future<int> pushOperations(
+    String token,
+    List<SyncQueueOperation> operations,
+  ) async {
     if (operations.isEmpty) return 0;
     try {
       final payload = {
@@ -117,7 +125,10 @@ class SyncRepository {
     }
   }
 
-  Future<CloudSyncData> fullSync(String token, List<SyncQueueOperation> operations) async {
+  Future<CloudSyncData> fullSync(
+    String token,
+    List<SyncQueueOperation> operations,
+  ) async {
     try {
       final payload = {
         'operations': operations.map((o) => o.toApiPayload()).toList(),
@@ -135,10 +146,7 @@ class SyncRepository {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         return CloudSyncData.fromJson(body['state'] as Map<String, dynamic>);
       } else {
-        throw SyncRepositoryException(
-          'Full sync failed',
-          response.statusCode,
-        );
+        throw SyncRepositoryException('Full sync failed', response.statusCode);
       }
     } on SocketException {
       throw const SyncRepositoryException('Cannot reach server (offline)');

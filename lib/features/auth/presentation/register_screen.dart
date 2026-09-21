@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
@@ -39,11 +40,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    final success = await ref.read(authStateProvider.notifier).register(
-          email: email,
-          password: password,
-          displayName: displayName,
-        );
+    final success = await ref
+        .read(authStateProvider.notifier)
+        .register(email: email, password: password, displayName: displayName);
 
     if (mounted && success) {
       if (context.canPop()) {
@@ -65,7 +64,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -78,7 +80,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space24),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.space24,
+            ),
             child: Form(
               key: _formKey,
               child: Column(
@@ -115,16 +119,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.15),
                         borderRadius: AppDimensions.borderRadiusMd,
-                        border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                        border: Border.all(
+                          color: Colors.red.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 20),
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               authState.errorMessage!,
-                              style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                              style: const TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ],
@@ -139,21 +152,33 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     style: const TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Display Name',
-                      labelStyle: const TextStyle(color: AppColors.textSecondary),
-                      prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.textTertiary),
+                      labelStyle: const TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.person_outline_rounded,
+                        color: AppColors.textTertiary,
+                      ),
                       filled: true,
                       fillColor: AppColors.surfaceElevated,
                       border: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.surfaceBorder,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.surfaceBorder,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     validator: (value) {
@@ -172,21 +197,33 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     style: const TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Email Address',
-                      labelStyle: const TextStyle(color: AppColors.textSecondary),
-                      prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textTertiary),
+                      labelStyle: const TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.email_outlined,
+                        color: AppColors.textTertiary,
+                      ),
                       filled: true,
                       fillColor: AppColors.surfaceElevated,
                       border: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.surfaceBorder,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.surfaceBorder,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     validator: (value) {
@@ -208,11 +245,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     style: const TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Password (min. 8 characters)',
-                      labelStyle: const TextStyle(color: AppColors.textSecondary),
-                      prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.textTertiary),
+                      labelStyle: const TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline_rounded,
+                        color: AppColors.textTertiary,
+                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                          _obscurePassword
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded,
                           color: AppColors.textTertiary,
                         ),
                         onPressed: () {
@@ -225,15 +269,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       fillColor: AppColors.surfaceElevated,
                       border: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.surfaceBorder,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.surfaceBorder,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     validator: (value) {
@@ -255,11 +306,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     style: const TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Confirm Password',
-                      labelStyle: const TextStyle(color: AppColors.textSecondary),
-                      prefixIcon: const Icon(Icons.lock_reset_rounded, color: AppColors.textTertiary),
+                      labelStyle: const TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.lock_reset_rounded,
+                        color: AppColors.textTertiary,
+                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscureConfirmPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded,
                           color: AppColors.textTertiary,
                         ),
                         onPressed: () {
@@ -272,15 +330,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       fillColor: AppColors.surfaceElevated,
                       border: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.surfaceBorder,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.surfaceBorder,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: AppDimensions.borderRadiusMd,
-                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     validator: (value) {
@@ -334,7 +399,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     children: [
                       const Text(
                         'Already have an account? ',
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
                       ),
                       GestureDetector(
                         onTap: () {

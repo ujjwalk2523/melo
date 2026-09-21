@@ -42,33 +42,21 @@ String? _safeReadToken(Ref ref) {
 final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final syncEngine = ref.watch(syncEngineProvider);
-  return FavoritesRepositoryImpl(
-    db,
-    syncEngine,
-    () => _safeReadToken(ref),
-  );
+  return FavoritesRepositoryImpl(db, syncEngine, () => _safeReadToken(ref));
 });
 
 /// History repository provider.
 final historyRepositoryProvider = Provider<HistoryRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final syncEngine = ref.watch(syncEngineProvider);
-  return HistoryRepositoryImpl(
-    db,
-    syncEngine,
-    () => _safeReadToken(ref),
-  );
+  return HistoryRepositoryImpl(db, syncEngine, () => _safeReadToken(ref));
 });
 
 /// Playlist repository provider.
 final playlistRepositoryProvider = Provider<PlaylistRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final syncEngine = ref.watch(syncEngineProvider);
-  return PlaylistRepositoryImpl(
-    db,
-    syncEngine,
-    () => _safeReadToken(ref),
-  );
+  return PlaylistRepositoryImpl(db, syncEngine, () => _safeReadToken(ref));
 });
 
 /// Download metadata repository provider.
@@ -105,11 +93,8 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
   final SyncEngine? _syncEngine;
   final String? Function()? _getAuthToken;
 
-  UserPreferencesNotifier(
-    this._repo, [
-    this._syncEngine,
-    this._getAuthToken,
-  ]) : super(_repo?.getPreferences() ?? const UserPreferences());
+  UserPreferencesNotifier(this._repo, [this._syncEngine, this._getAuthToken])
+    : super(_repo?.getPreferences() ?? const UserPreferences());
 
   void _enqueueSync() {
     _syncEngine?.enqueueOperation(

@@ -26,7 +26,9 @@ class AuthUser {
     return AuthUser(
       id: json['id'] as String,
       email: json['email'] as String,
-      displayName: json['displayName'] as String? ?? (json['email'] as String).split('@').first,
+      displayName:
+          json['displayName'] as String? ??
+          (json['email'] as String).split('@').first,
       avatarUrl: json['avatarUrl'] as String?,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)

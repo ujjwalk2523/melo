@@ -1,6 +1,8 @@
 import 'dart:io';
+
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+
 import '../../shared/models/song.dart';
 import 'download_errors.dart';
 
@@ -28,7 +30,9 @@ class DownloadStorage {
       return meloDir;
     } catch (_) {
       // In headless test environments where path_provider is not mocked
-      final tempDir = Directory(p.join(Directory.systemTemp.path, 'melo_downloads'));
+      final tempDir = Directory(
+        p.join(Directory.systemTemp.path, 'melo_downloads'),
+      );
       if (!await tempDir.exists()) {
         await tempDir.create(recursive: true);
       }
@@ -74,16 +78,24 @@ class DownloadStorage {
     final finalFile = await getFinalAudioFile(song);
 
     if (!await tempFile.exists()) {
-      throw DownloadCorruptException('Temporary download file does not exist', songId: song.id);
+      throw DownloadCorruptException(
+        'Temporary download file does not exist',
+        songId: song.id,
+      );
     }
 
     final size = await tempFile.length();
     if (size == 0) {
       await deleteTempFile(song);
-      throw DownloadCorruptException('Downloaded file is empty (0 bytes)', songId: song.id);
+      throw DownloadCorruptException(
+        'Downloaded file is empty (0 bytes)',
+        songId: song.id,
+      );
     }
 
-    if (expectedSizeBytes != null && expectedSizeBytes > 0 && size != expectedSizeBytes) {
+    if (expectedSizeBytes != null &&
+        expectedSizeBytes > 0 &&
+        size != expectedSizeBytes) {
       await deleteTempFile(song);
       throw DownloadCorruptException(
         'Downloaded file size ($size bytes) does not match expected size ($expectedSizeBytes bytes)',
@@ -98,7 +110,10 @@ class DownloadStorage {
       await raf.close();
     } catch (e) {
       await deleteTempFile(song);
-      throw DownloadCorruptException('Downloaded file cannot be read: $e', songId: song.id);
+      throw DownloadCorruptException(
+        'Downloaded file cannot be read: $e',
+        songId: song.id,
+      );
     }
 
     // Atomic move / rename
@@ -159,7 +174,10 @@ class DownloadStorage {
       final baseDir = await getBaseDirectory();
       if (!await baseDir.exists()) return 0;
 
-      await for (final entity in baseDir.list(recursive: true, followLinks: false)) {
+      await for (final entity in baseDir.list(
+        recursive: true,
+        followLinks: false,
+      )) {
         if (entity is File && entity.path.endsWith('.part')) {
           try {
             await entity.delete();
@@ -178,7 +196,10 @@ class DownloadStorage {
       final baseDir = await getBaseDirectory();
       if (!await baseDir.exists()) return 0;
 
-      await for (final entity in baseDir.list(recursive: true, followLinks: false)) {
+      await for (final entity in baseDir.list(
+        recursive: true,
+        followLinks: false,
+      )) {
         if (entity is File && !entity.path.endsWith('.part')) {
           try {
             totalBytes += await entity.length();

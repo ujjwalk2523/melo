@@ -13,6 +13,7 @@ import 'package:melo/features/home/presentation/widgets/horizontal_section.dart'
 import 'package:melo/features/home/presentation/widgets/quick_picks_grid.dart';
 import 'package:melo/features/home/providers/home_provider.dart';
 import 'package:melo/features/player/providers/player_provider.dart';
+import 'package:melo/shared/models/song.dart';
 import 'package:melo/shared/widgets/section_header.dart';
 import 'package:melo/shared/widgets/song_tile.dart';
 
@@ -35,10 +36,27 @@ class HomeScreen extends ConsumerWidget {
     final featuredArtists = ref.watch(featuredArtistsProvider);
     final featuredAlbums = ref.watch(featuredAlbumsProvider);
 
+    final prefs = ref.watch(userPreferencesNotifierProvider);
+    final allowPersonalized = prefs.personalizedRecommendations;
+
     final recState = ref.watch(recommendationStateProvider);
-    final madeForYouRecs = recState.sections[RecommendationSection.madeForYou]?.map((r) => r.song).toList() ?? [];
-    final becauseYouLikedRecs = recState.sections[RecommendationSection.becauseYouLiked]?.map((r) => r.song).toList() ?? [];
-    final discoverNewArtistsRecs = recState.sections[RecommendationSection.discoverNewArtists]?.map((r) => r.song).toList() ?? [];
+    final madeForYouRecs = allowPersonalized
+        ? (recState.sections[RecommendationSection.madeForYou]
+                  ?.map((r) => r.song)
+                  .toList() ??
+              [])
+        : <Song>[];
+    final becauseYouLikedRecs = allowPersonalized
+        ? (recState.sections[RecommendationSection.becauseYouLiked]
+                  ?.map((r) => r.song)
+                  .toList() ??
+              [])
+        : <Song>[];
+    final discoverNewArtistsRecs =
+        recState.sections[RecommendationSection.discoverNewArtists]
+            ?.map((r) => r.song)
+            .toList() ??
+        [];
 
     final playerState = ref.watch(playerNotifierProvider);
     final currentSong = playerState.currentSong;
@@ -99,7 +117,8 @@ class HomeScreen extends ConsumerWidget {
                 SliverToBoxAdapter(
                   child: HorizontalSection(
                     title: 'Because You Liked',
-                    subtitle: 'Echoing the rhythm and atmosphere of your favorites',
+                    subtitle:
+                        'Echoing the rhythm and atmosphere of your favorites',
                     songs: becauseYouLikedRecs,
                   ),
                 ),

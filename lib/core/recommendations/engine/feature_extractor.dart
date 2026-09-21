@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:melo/core/recommendations/domain/taste_profile.dart';
 import 'package:melo/core/recommendations/utils/recommendation_weights.dart';
 import 'package:melo/shared/models/song.dart';
@@ -7,9 +8,7 @@ import 'package:melo/shared/models/song.dart';
 class FeatureExtractor {
   final RecommendationWeights weights;
 
-  const FeatureExtractor({
-    this.weights = const RecommendationWeights(),
-  });
+  const FeatureExtractor({this.weights = const RecommendationWeights()});
 
   /// Builds a normalized [TasteProfile] from user interaction datasets.
   TasteProfile extractTasteProfile({
@@ -19,7 +18,10 @@ class FeatureExtractor {
     List<Song> downloads = const [],
   }) {
     final totalInteractions =
-        favorites.length + history.length + playlistSongGroups.fold(0, (sum, g) => sum + g.length) + downloads.length;
+        favorites.length +
+        history.length +
+        playlistSongGroups.fold(0, (sum, g) => sum + g.length) +
+        downloads.length;
 
     if (totalInteractions == 0) {
       return TasteProfile.empty();
@@ -99,7 +101,9 @@ class FeatureExtractor {
       historySongCounts[song.id] = count;
 
       final isRepeat = count > 1;
-      final playWeight = weights.completedPlayWeight + (isRepeat ? weights.repeatPlayWeight : 0.0);
+      final playWeight =
+          weights.completedPlayWeight +
+          (isRepeat ? weights.repeatPlayWeight : 0.0);
 
       addSignal(
         artist: song.artist,

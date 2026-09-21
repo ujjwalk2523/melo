@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
+
 import '../../../core/network/api_config.dart';
 import '../domain/auth_user.dart';
 
@@ -46,14 +48,14 @@ class AuthApi {
   final String _baseUrl;
 
   AuthApi({http.Client? client, String? baseUrl})
-      : _client = client ?? http.Client(),
-        _baseUrl = baseUrl ?? ApiConfig.baseUrl;
+    : _client = client ?? http.Client(),
+      _baseUrl = baseUrl ?? ApiConfig.baseUrl;
 
   Map<String, String> _headers([String? token]) => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    if (token != null) 'Authorization': 'Bearer $token',
+  };
 
   Future<AuthLoginResult> register({
     required String email,
@@ -76,7 +78,9 @@ class AuthApi {
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final user = AuthUser.fromJson(body['user'] as Map<String, dynamic>);
-        final tokens = AuthTokensResponse.fromJson(body['tokens'] as Map<String, dynamic>);
+        final tokens = AuthTokensResponse.fromJson(
+          body['tokens'] as Map<String, dynamic>,
+        );
         return AuthLoginResult(user: user, tokens: tokens);
       } else {
         throw AuthApiException(
@@ -85,7 +89,9 @@ class AuthApi {
         );
       }
     } on SocketException {
-      throw const AuthApiException('Cannot reach server. Please check your network connection.');
+      throw const AuthApiException(
+        'Cannot reach server. Please check your network connection.',
+      );
     } catch (e) {
       if (e is AuthApiException) rethrow;
       throw AuthApiException(e.toString());
@@ -101,17 +107,16 @@ class AuthApi {
           .post(
             Uri.parse('$_baseUrl/auth/login'),
             headers: _headers(),
-            body: jsonEncode({
-              'email': email,
-              'password': password,
-            }),
+            body: jsonEncode({'email': email, 'password': password}),
           )
           .timeout(ApiConfig.timeout);
 
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final user = AuthUser.fromJson(body['user'] as Map<String, dynamic>);
-        final tokens = AuthTokensResponse.fromJson(body['tokens'] as Map<String, dynamic>);
+        final tokens = AuthTokensResponse.fromJson(
+          body['tokens'] as Map<String, dynamic>,
+        );
         return AuthLoginResult(user: user, tokens: tokens);
       } else {
         throw AuthApiException(
@@ -120,7 +125,9 @@ class AuthApi {
         );
       }
     } on SocketException {
-      throw const AuthApiException('Cannot reach server. Please check your network connection.');
+      throw const AuthApiException(
+        'Cannot reach server. Please check your network connection.',
+      );
     } catch (e) {
       if (e is AuthApiException) rethrow;
       throw AuthApiException(e.toString());
@@ -139,7 +146,9 @@ class AuthApi {
 
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return AuthTokensResponse.fromJson(body['tokens'] as Map<String, dynamic>);
+        return AuthTokensResponse.fromJson(
+          body['tokens'] as Map<String, dynamic>,
+        );
       } else {
         throw AuthApiException(
           body['message'] as String? ?? 'Session refresh failed',
@@ -196,7 +205,11 @@ class AuthApi {
     }
   }
 
-  Future<AuthUser> updateMe(String token, {String? displayName, String? avatarUrl}) async {
+  Future<AuthUser> updateMe(
+    String token, {
+    String? displayName,
+    String? avatarUrl,
+  }) async {
     final response = await _client
         .patch(
           Uri.parse('$_baseUrl/auth/me'),

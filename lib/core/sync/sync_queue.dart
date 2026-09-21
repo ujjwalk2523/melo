@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:drift/drift.dart';
+
 import '../database/app_database.dart';
 
 class SyncQueueOperation {
@@ -50,7 +52,9 @@ class SyncQueue {
     required String operationType,
     required Map<String, dynamic> payload,
   }) async {
-    await _db.into(_db.syncQueueTable).insertOnConflictUpdate(
+    await _db
+        .into(_db.syncQueueTable)
+        .insertOnConflictUpdate(
           SyncQueueTableCompanion(
             id: Value(id),
             userId: Value(userId),
@@ -65,9 +69,13 @@ class SyncQueue {
         );
   }
 
-  Future<List<SyncQueueOperation>> getPendingOperations({int limit = 100}) async {
+  Future<List<SyncQueueOperation>> getPendingOperations({
+    int limit = 100,
+  }) async {
     final query = _db.select(_db.syncQueueTable)
-      ..where((tbl) => tbl.status.equals('pending') | tbl.status.equals('failed'))
+      ..where(
+        (tbl) => tbl.status.equals('pending') | tbl.status.equals('failed'),
+      )
       ..orderBy([(tbl) => OrderingTerm.asc(tbl.createdAt)])
       ..limit(limit);
 
@@ -96,23 +104,32 @@ class SyncQueue {
   Future<int> getPendingCount() async {
     final query = _db.selectOnly(_db.syncQueueTable)
       ..addColumns([_db.syncQueueTable.id.count()])
-      ..where(_db.syncQueueTable.status.equals('pending') | _db.syncQueueTable.status.equals('failed'));
+      ..where(
+        _db.syncQueueTable.status.equals('pending') |
+            _db.syncQueueTable.status.equals('failed'),
+      );
 
-    final result = await query.map((row) => row.read(_db.syncQueueTable.id.count())).getSingle();
+    final result = await query
+        .map((row) => row.read(_db.syncQueueTable.id.count()))
+        .getSingle();
     return result ?? 0;
   }
 
   Future<void> markCompleted(List<String> operationIds) async {
     if (operationIds.isEmpty) return;
-    await (_db.delete(_db.syncQueueTable)
-          ..where((tbl) => tbl.id.isIn(operationIds)))
-        .go();
+    await (_db.delete(
+      _db.syncQueueTable,
+    )..where((tbl) => tbl.id.isIn(operationIds))).go();
   }
 
   Future<void> markFailed(String operationId, String error) async {
-    final row = await (_db.select(_db.syncQueueTable)..where((tbl) => tbl.id.equals(operationId))).getSingleOrNull();
+    final row = await (_db.select(
+      _db.syncQueueTable,
+    )..where((tbl) => tbl.id.equals(operationId))).getSingleOrNull();
     final retry = (row?.retryCount ?? 0) + 1;
-    await (_db.update(_db.syncQueueTable)..where((tbl) => tbl.id.equals(operationId))).write(
+    await (_db.update(
+      _db.syncQueueTable,
+    )..where((tbl) => tbl.id.equals(operationId))).write(
       SyncQueueTableCompanion(
         status: const Value('failed'),
         lastError: Value(error),

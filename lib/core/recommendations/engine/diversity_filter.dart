@@ -5,9 +5,7 @@ import 'package:melo/core/recommendations/utils/recommendation_weights.dart';
 class DiversityFilter {
   final RecommendationWeights weights;
 
-  const DiversityFilter({
-    this.weights = const RecommendationWeights(),
-  });
+  const DiversityFilter({this.weights = const RecommendationWeights()});
 
   /// Filters and reorders [candidates] to ensure musical diversity.
   List<RecommendationCandidate> applyDiversity({
@@ -45,7 +43,8 @@ class DiversityFilter {
       }
 
       // Check consecutive artist rule
-      if (artist == lastArtist && consecutiveArtistCount >= weights.maxConsecutiveArtist) {
+      if (artist == lastArtist &&
+          consecutiveArtistCount >= weights.maxConsecutiveArtist) {
         deferred.add(candidate);
         continue;
       }
@@ -73,7 +72,10 @@ class DiversityFilter {
         final album = candidate.song.album.trim();
         final currentArtistCount = artistCount[artist] ?? 0;
         if (currentArtistCount >= weights.maxTracksPerArtist) continue;
-        if (album.isNotEmpty && (albumCount[album] ?? 0) >= weights.maxTracksPerAlbum) continue;
+        if (album.isNotEmpty &&
+            (albumCount[album] ?? 0) >= weights.maxTracksPerAlbum) {
+          continue;
+        }
 
         filtered.add(candidate);
         artistCount[artist] = currentArtistCount + 1;

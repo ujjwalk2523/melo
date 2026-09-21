@@ -410,47 +410,51 @@ class FullPlayerScreen extends ConsumerWidget {
                           ),
                         ),
 
-                            // Download button with full state support
-                            _buildDownloadButton(context, ref, song, isDownloaded),
+                        // Download button with full state support
+                        _buildDownloadButton(context, ref, song, isDownloaded),
 
-                            // More Like This button
-                            IconButton(
-                              icon: const Icon(
-                                Icons.auto_awesome_rounded,
-                                color: AppColors.textSecondary,
-                                size: 22,
-                              ),
-                              tooltip: 'More Like This',
-                              onPressed: () {
-                                _showSimilarSongsSheet(context, ref, song);
-                              },
-                            ),
-
-                            // Queue button
-                            IconButton(
-                              icon: const Icon(
-                                Icons.queue_music_rounded,
-                                color: AppColors.textSecondary,
-                                size: 24,
-                              ),
-                              tooltip: 'Queue',
-                              onPressed: () {
-                                QueueSheet.show(context);
-                              },
-                            ),
-                          ],
+                        // More Like This button
+                        IconButton(
+                          icon: const Icon(
+                            Icons.auto_awesome_rounded,
+                            color: AppColors.textSecondary,
+                            size: 22,
+                          ),
+                          tooltip: 'More Like This',
+                          onPressed: () {
+                            _showSimilarSongsSheet(context, ref, song);
+                          },
                         ),
-                      ),
-                    ],
+
+                        // Queue button
+                        IconButton(
+                          icon: const Icon(
+                            Icons.queue_music_rounded,
+                            color: AppColors.textSecondary,
+                            size: 24,
+                          ),
+                          tooltip: 'Queue',
+                          onPressed: () {
+                            QueueSheet.show(context);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  void _showSimilarSongsSheet(BuildContext context, WidgetRef ref, Song song) async {
+  void _showSimilarSongsSheet(
+    BuildContext context,
+    WidgetRef ref,
+    Song song,
+  ) async {
     final engine = ref.read(recommendationEngineProvider);
     final similar = await engine.getSimilarSongs(song, limit: 10);
     if (!context.mounted) return;
@@ -482,7 +486,10 @@ class FullPlayerScreen extends ConsumerWidget {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.textSecondary,
+                  ),
                   onPressed: () => Navigator.pop(ctx),
                 ),
               ],
@@ -507,20 +514,33 @@ class FullPlayerScreen extends ConsumerWidget {
                     final item = similar[i];
                     return ListTile(
                       dense: true,
-                      leading: AuraArtwork(seed: item.id, imageUrl: item.artworkUrl, size: 40),
+                      leading: AuraArtwork(
+                        seed: item.id,
+                        imageUrl: item.artworkUrl,
+                        size: 40,
+                      ),
                       title: Text(
                         item.title,
-                        style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
                         item.artist,
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
                         maxLines: 1,
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.play_arrow_rounded, color: AppColors.primary),
+                        icon: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: AppColors.primary,
+                        ),
                         onPressed: () {
                           ref.read(playerNotifierProvider.notifier).play(item);
                           Navigator.pop(ctx);
@@ -563,7 +583,8 @@ class FullPlayerScreen extends ConsumerWidget {
     }
 
     final downloadAsync = ref.watch(trackDownloadStateProvider(song.id));
-    final dlState = downloadAsync.valueOrNull ??
+    final dlState =
+        downloadAsync.valueOrNull ??
         (isDownloaded
             ? TrackDownloadState(
                 songId: song.id,
@@ -585,7 +606,9 @@ class FullPlayerScreen extends ConsumerWidget {
               CircularProgressIndicator(
                 value: dlState.progress > 0 ? dlState.progress : null,
                 strokeWidth: 2.2,
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.secondary),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppColors.secondary,
+                ),
               ),
               Text(
                 '${(dlState.progress * 100).toInt()}%',
@@ -621,14 +644,21 @@ class FullPlayerScreen extends ConsumerWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogCtx).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
                 FilledButton(
-                  style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                  ),
                   onPressed: () {
                     Navigator.of(dialogCtx).pop();
                     manager.removeDownload(song);
-                    ref.read(playerNotifierProvider.notifier).toggleDownload(song.id, song);
+                    ref
+                        .read(playerNotifierProvider.notifier)
+                        .toggleDownload(song.id, song);
                   },
                   child: const Text('Remove'),
                 ),

@@ -1,9 +1,14 @@
 import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../domain/auth_user.dart';
 
 abstract class IAuthSessionStorage {
-  Future<void> saveTokens({required String accessToken, required String refreshToken});
+  Future<void> saveTokens({
+    required String accessToken,
+    required String refreshToken,
+  });
   Future<String?> getAccessToken();
   Future<String?> getRefreshToken();
   Future<void> saveUser(AuthUser user);
@@ -19,7 +24,7 @@ class FlutterSecureAuthSessionStorage implements IAuthSessionStorage {
   static const _keyUser = 'melo_secure_user_profile';
 
   FlutterSecureAuthSessionStorage([FlutterSecureStorage? storage])
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   @override
   Future<void> saveTokens({

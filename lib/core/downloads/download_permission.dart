@@ -9,13 +9,11 @@ sealed class DownloadPermission {
     DateTime? expiresAt,
   }) = AuthorizedDownloadPermission;
 
-  const factory DownloadPermission.notAuthorized({
-    String? reason,
-  }) = NotAuthorizedDownloadPermission;
+  const factory DownloadPermission.notAuthorized({String? reason}) =
+      NotAuthorizedDownloadPermission;
 
-  const factory DownloadPermission.unavailable({
-    String? reason,
-  }) = UnavailableDownloadPermission;
+  const factory DownloadPermission.unavailable({String? reason}) =
+      UnavailableDownloadPermission;
 
   bool get isAuthorized => this is AuthorizedDownloadPermission;
 }
@@ -24,10 +22,7 @@ class AuthorizedDownloadPermission extends DownloadPermission {
   final String url;
   final DateTime? expiresAt;
 
-  const AuthorizedDownloadPermission({
-    required this.url,
-    this.expiresAt,
-  });
+  const AuthorizedDownloadPermission({required this.url, this.expiresAt});
 
   bool get isExpired => expiresAt != null && DateTime.now().isAfter(expiresAt!);
 }

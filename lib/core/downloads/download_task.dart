@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import '../../shared/models/song.dart';
 import 'download_service.dart';
 import 'download_state.dart';
@@ -15,10 +16,10 @@ class DownloadTask {
     required this.song,
     CancellationToken? cancelToken,
     TrackDownloadState? initialState,
-  })  : cancelToken = cancelToken ?? CancellationToken(),
-        _stateController = StreamController<TrackDownloadState>.broadcast(),
-        _state = initialState ?? TrackDownloadState.notDownloaded(song.id),
-        createdAt = DateTime.now();
+  }) : cancelToken = cancelToken ?? CancellationToken(),
+       _stateController = StreamController<TrackDownloadState>.broadcast(),
+       _state = initialState ?? TrackDownloadState.notDownloaded(song.id),
+       createdAt = DateTime.now();
 
   String get songId => song.id;
 

@@ -1,11 +1,4 @@
-enum SyncStatus {
-  idle,
-  syncing,
-  success,
-  offline,
-  error,
-  pending,
-}
+enum SyncStatus { idle, syncing, success, offline, error, pending }
 
 class SyncState {
   final SyncStatus status;
@@ -33,7 +26,9 @@ class SyncState {
       case SyncStatus.error:
         return 'Sync failed — retry';
       case SyncStatus.pending:
-        return pendingCount > 0 ? '$pendingCount changes pending sync' : 'Pending sync';
+        return pendingCount > 0
+            ? '$pendingCount changes pending sync'
+            : 'Pending sync';
       case SyncStatus.success:
       case SyncStatus.idle:
         if (lastSuccessfulSyncAt == null) {

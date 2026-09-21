@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../database/database_providers.dart';
 import 'sync_engine.dart';
 import 'sync_queue.dart';
@@ -45,7 +46,9 @@ class SyncStateNotifier extends StateNotifier<SyncState> {
   }
 }
 
-final syncStateProvider = StateNotifierProvider<SyncStateNotifier, SyncState>((ref) {
+final syncStateProvider = StateNotifierProvider<SyncStateNotifier, SyncState>((
+  ref,
+) {
   final engine = ref.watch(syncEngineProvider);
   return SyncStateNotifier(engine);
 });

@@ -110,7 +110,9 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   }
 
   void _initDownloadsSubscription() {
-    _downloadSubscription = _downloadRepo?.watchDownloadedSongIds().listen((ids) {
+    _downloadSubscription = _downloadRepo?.watchDownloadedSongIds().listen((
+      ids,
+    ) {
       if (mounted) {
         state = state.copyWith(downloadedIds: ids);
       }
@@ -225,7 +227,10 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       if (url != null && url.trim().isNotEmpty) {
         source = RemoteUrlSource(url, song);
       } else {
-        source = UnavailableSource('Playback is unavailable for this track.', song);
+        source = UnavailableSource(
+          'Playback is unavailable for this track.',
+          song,
+        );
       }
     }
 
@@ -290,7 +295,8 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
           if (!mounted) return;
           state = state.copyWith(
             status: PlayerStatus.error,
-            errorMessage: 'Unable to stream this track. Please check connection.',
+            errorMessage:
+                'Unable to stream this track. Please check connection.',
           );
           _syncAudioHandlerPlaybackState();
         }

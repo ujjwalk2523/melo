@@ -67,7 +67,9 @@ class SyncConflictResolver {
     required DateTime cloudPlayedAt,
   }) {
     final mergedCount = max(localPlayCount, cloudPlayCount);
-    final mergedPlayedAt = localPlayedAt.isAfter(cloudPlayedAt) ? localPlayedAt : cloudPlayedAt;
+    final mergedPlayedAt = localPlayedAt.isAfter(cloudPlayedAt)
+        ? localPlayedAt
+        : cloudPlayedAt;
     return (playCount: mergedCount, playedAt: mergedPlayedAt);
   }
 }

@@ -25,7 +25,8 @@ class ProfileScreen extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final syncState = ref.watch(syncStateProvider);
     final isAuthenticated = user != null;
-    final storageBytes = ref.watch(downloadStorageSizeProvider).valueOrNull ?? 0;
+    final storageBytes =
+        ref.watch(downloadStorageSizeProvider).valueOrNull ?? 0;
     final mbUsed = (storageBytes / (1024 * 1024)).toStringAsFixed(1);
 
     final displayName = user?.displayName ?? 'Ujjwal';
@@ -119,7 +120,9 @@ class ProfileScreen extends ConsumerWidget {
                                 color: AppColors.primary.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: AppColors.primary.withValues(alpha: 0.5),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                               ),
                               child: Text(
@@ -152,16 +155,16 @@ class ProfileScreen extends ConsumerWidget {
                             syncState.status == SyncStatus.syncing
                                 ? Icons.sync_rounded
                                 : syncState.status == SyncStatus.offline
-                                    ? Icons.cloud_off_rounded
-                                    : syncState.status == SyncStatus.error
-                                        ? Icons.sync_problem_rounded
-                                        : Icons.cloud_done_rounded,
+                                ? Icons.cloud_off_rounded
+                                : syncState.status == SyncStatus.error
+                                ? Icons.sync_problem_rounded
+                                : Icons.cloud_done_rounded,
                             size: 16,
                             color: syncState.status == SyncStatus.error
                                 ? Colors.redAccent
                                 : syncState.status == SyncStatus.offline
-                                    ? Colors.orangeAccent
-                                    : AppColors.secondary,
+                                ? Colors.orangeAccent
+                                : AppColors.secondary,
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -179,24 +182,36 @@ class ProfileScreen extends ConsumerWidget {
                           onPressed: syncState.status == SyncStatus.syncing
                               ? null
                               : () => ref
-                                  .read(syncStateProvider.notifier)
-                                  .syncNow(authState.accessToken, user.id),
+                                    .read(syncStateProvider.notifier)
+                                    .syncNow(authState.accessToken, user.id),
                           icon: const Icon(Icons.refresh_rounded, size: 16),
-                          label: const Text('Sync Now', style: TextStyle(fontSize: 12)),
+                          label: const Text(
+                            'Sync Now',
+                            style: TextStyle(fontSize: 12),
+                          ),
                           style: TextButton.styleFrom(
                             foregroundColor: AppColors.secondary,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                           ),
                         )
                       else
                         ElevatedButton.icon(
                           onPressed: () => context.push(AppRoutes.login),
                           icon: const Icon(Icons.login_rounded, size: 16),
-                          label: const Text('Sign In', style: TextStyle(fontSize: 12)),
+                          label: const Text(
+                            'Sign In',
+                            style: TextStyle(fontSize: 12),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                           ),
                         ),
                     ],
@@ -207,23 +222,41 @@ class ProfileScreen extends ConsumerWidget {
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => ref.read(authStateProvider.notifier).logout(),
+                            onPressed: () =>
+                                ref.read(authStateProvider.notifier).logout(),
                             icon: const Icon(Icons.logout_rounded, size: 16),
-                            label: const Text('Log Out', style: TextStyle(fontSize: 12)),
+                            label: const Text(
+                              'Log Out',
+                              style: TextStyle(fontSize: 12),
+                            ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.textSecondary,
-                              side: const BorderSide(color: AppColors.surfaceBorder),
+                              side: const BorderSide(
+                                color: AppColors.surfaceBorder,
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         OutlinedButton.icon(
-                          onPressed: () => _confirmAccountDeletion(context, ref),
-                          icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
-                          label: const Text('Delete Account',
-                              style: TextStyle(fontSize: 12, color: Colors.redAccent)),
+                          onPressed: () =>
+                              _confirmAccountDeletion(context, ref),
+                          icon: const Icon(
+                            Icons.delete_outline_rounded,
+                            size: 16,
+                            color: Colors.redAccent,
+                          ),
+                          label: const Text(
+                            'Delete Account',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.redAccent,
+                            ),
+                          ),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.5)),
+                            side: BorderSide(
+                              color: Colors.redAccent.withValues(alpha: 0.5),
+                            ),
                           ),
                         ),
                       ],
@@ -406,7 +439,8 @@ class ProfileScreen extends ConsumerWidget {
               icon: Icons.explore_rounded,
               title: 'Discovery Level',
               subtitle: 'Current mode: ${prefs.discoveryLevel.toUpperCase()}',
-              onTap: () => _showDiscoveryLevelDialog(context, ref, prefs.discoveryLevel),
+              onTap: () =>
+                  _showDiscoveryLevelDialog(context, ref, prefs.discoveryLevel),
             ),
             _buildSettingTile(
               icon: Icons.restart_alt_rounded,
@@ -673,7 +707,10 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: AppColors.surfaceElevated,
         title: const Text(
           'Delete Cloud Account?',
-          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Colors.redAccent,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         content: const Text(
           'This action permanently deletes your cloud account and all synchronized cloud records. Your local library and music on this device will be preserved.',
@@ -682,18 +719,25 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textTertiary)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textTertiary),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.of(ctx).pop();
-              final success = await ref.read(authStateProvider.notifier).deleteAccount();
+              final success = await ref
+                  .read(authStateProvider.notifier)
+                  .deleteAccount();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(success
-                        ? 'Account deleted successfully'
-                        : 'Failed to delete account. Please try again.'),
+                    content: Text(
+                      success
+                          ? 'Account deleted successfully'
+                          : 'Failed to delete account. Please try again.',
+                    ),
                     backgroundColor: AppColors.surfaceHighlight,
                   ),
                 );
@@ -717,7 +761,10 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: AppColors.surfaceElevated,
         title: const Text(
           'Clear All Downloads?',
-          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Colors.redAccent,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         content: const Text(
           'This will delete all offline downloaded tracks from your device. You can re-download authorized tracks at any time.',
@@ -726,7 +773,10 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textTertiary)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textTertiary),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -753,7 +803,11 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showDiscoveryLevelDialog(BuildContext context, WidgetRef ref, String currentLevel) {
+  void _showDiscoveryLevelDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String currentLevel,
+  ) {
     const levels = [
       ('familiar', 'Familiar (85% familiar, 15% discovery)'),
       ('balanced', 'Balanced (70% familiar, 30% discovery)'),
@@ -766,7 +820,10 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: AppColors.surfaceElevated,
         title: const Text(
           'Select Discovery Level',
-          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -781,9 +838,13 @@ class ProfileScreen extends ConsumerWidget {
                   fontSize: 13,
                 ),
               ),
-              trailing: isSelected ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+              trailing: isSelected
+                  ? const Icon(Icons.check_rounded, color: AppColors.primary)
+                  : null,
               onTap: () {
-                ref.read(userPreferencesNotifierProvider.notifier).setDiscoveryLevel(lvl.$1);
+                ref
+                    .read(userPreferencesNotifierProvider.notifier)
+                    .setDiscoveryLevel(lvl.$1);
                 ref.read(recommendationStateProvider.notifier).refresh();
                 Navigator.of(ctx).pop();
               },
@@ -801,7 +862,10 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: AppColors.surfaceElevated,
         title: const Text(
           'Reset Recommendation Profile?',
-          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Colors.redAccent,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         content: const Text(
           'This will reset your local music intelligence preferences, unhide previously hidden songs, and wipe cached recommendations. Your favorites, playlists, and listening history will remain completely untouched.',
@@ -810,13 +874,20 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textTertiary)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textTertiary),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.of(ctx).pop();
-              await ref.read(userPreferencesNotifierProvider.notifier).resetPersonalizationPreferences();
-              await ref.read(recommendationStateProvider.notifier).resetPersonalization();
+              await ref
+                  .read(userPreferencesNotifierProvider.notifier)
+                  .resetPersonalizationPreferences();
+              await ref
+                  .read(recommendationStateProvider.notifier)
+                  .resetPersonalization();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

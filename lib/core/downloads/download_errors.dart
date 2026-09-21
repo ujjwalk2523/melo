@@ -10,17 +10,11 @@ sealed class DownloadException implements Exception {
 }
 
 class DownloadNotAuthorizedException extends DownloadException {
-  const DownloadNotAuthorizedException(
-    super.message, {
-    super.songId,
-  });
+  const DownloadNotAuthorizedException(super.message, {super.songId});
 }
 
 class DownloadUrlExpiredException extends DownloadException {
-  const DownloadUrlExpiredException(
-    super.message, {
-    super.songId,
-  });
+  const DownloadUrlExpiredException(super.message, {super.songId});
 }
 
 class NetworkUnavailableException extends DownloadException {
@@ -45,29 +39,17 @@ class DownloadCancelledException extends DownloadException {
 }
 
 class DownloadCorruptException extends DownloadException {
-  const DownloadCorruptException(
-    super.message, {
-    super.songId,
-  });
+  const DownloadCorruptException(super.message, {super.songId});
 }
 
 class ProviderUnavailableException extends DownloadException {
-  const ProviderUnavailableException(
-    super.message, {
-    super.songId,
-  });
+  const ProviderUnavailableException(super.message, {super.songId});
 }
 
 class StorageFailureException extends DownloadException {
-  const StorageFailureException(
-    super.message, {
-    super.songId,
-  });
+  const StorageFailureException(super.message, {super.songId});
 }
 
 class UnknownDownloadFailureException extends DownloadException {
-  const UnknownDownloadFailureException(
-    super.message, {
-    super.songId,
-  });
+  const UnknownDownloadFailureException(super.message, {super.songId});
 }

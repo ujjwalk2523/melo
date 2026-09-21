@@ -37,18 +37,29 @@ class RecommendationEngine {
     DiversityFilter? diversityFilter,
     RecommendationExplainer? explainer,
     SongSimilarityCalculator? similarityCalculator,
-  })  : weights = weights ?? const RecommendationWeights(),
-        similarityCalculator = similarityCalculator ?? const SongSimilarityCalculator(),
-        featureExtractor = featureExtractor ?? FeatureExtractor(weights: weights ?? const RecommendationWeights()),
-        candidateGenerator = candidateGenerator ??
-            CandidateGenerator(similarityCalculator: similarityCalculator ?? const SongSimilarityCalculator()),
-        candidateScorer = candidateScorer ??
-            CandidateScorer(
-              weights: weights ?? const RecommendationWeights(),
-              similarityCalculator: similarityCalculator ?? const SongSimilarityCalculator(),
-            ),
-        diversityFilter = diversityFilter ?? DiversityFilter(weights: weights ?? const RecommendationWeights()),
-        explainer = explainer ?? const RecommendationExplainer();
+  }) : weights = weights ?? const RecommendationWeights(),
+       similarityCalculator =
+           similarityCalculator ?? const SongSimilarityCalculator(),
+       featureExtractor =
+           featureExtractor ??
+           FeatureExtractor(weights: weights ?? const RecommendationWeights()),
+       candidateGenerator =
+           candidateGenerator ??
+           CandidateGenerator(
+             similarityCalculator:
+                 similarityCalculator ?? const SongSimilarityCalculator(),
+           ),
+       candidateScorer =
+           candidateScorer ??
+           CandidateScorer(
+             weights: weights ?? const RecommendationWeights(),
+             similarityCalculator:
+                 similarityCalculator ?? const SongSimilarityCalculator(),
+           ),
+       diversityFilter =
+           diversityFilter ??
+           DiversityFilter(weights: weights ?? const RecommendationWeights()),
+       explainer = explainer ?? const RecommendationExplainer();
 
   /// Invalidates in-memory recommendation caches when user data updates.
   void invalidateCache() {
@@ -63,10 +74,14 @@ class RecommendationEngine {
     }
 
     final prefs = dataSource.getPreferences();
-    final allowHistory = prefs.offlineOnly ? false : true; // user preference respect
+    final allowHistory = prefs.offlineOnly
+        ? false
+        : true; // user preference respect
 
     final favorites = await dataSource.getFavorites();
-    final history = allowHistory ? await dataSource.getListeningHistory() : <Song>[];
+    final history = allowHistory
+        ? await dataSource.getListeningHistory()
+        : <Song>[];
     final playlists = await dataSource.getPlaylists();
     final playlistSongGroups = <List<Song>>[];
     for (final p in playlists) {
@@ -98,7 +113,9 @@ class RecommendationEngine {
     final tasteProfile = await getTasteProfile(forceRefresh: forceRefresh);
     final catalog = await dataSource.getCatalogSongs();
     final favorites = await dataSource.getFavorites();
-    final history = effectiveContext.allowHistory ? await dataSource.getListeningHistory() : <Song>[];
+    final history = effectiveContext.allowHistory
+        ? await dataSource.getListeningHistory()
+        : <Song>[];
     final playlists = await dataSource.getPlaylists();
     final playlistSongGroups = <List<Song>>[];
     for (final p in playlists) {
@@ -163,21 +180,24 @@ class RecommendationEngine {
     // Because You Liked...
     if (favorites.isNotEmpty) {
       final becauseYouLiked = diverseCandidates
-          .where((c) => c.defaultReason == RecommendationReason.similarToFavorite)
+          .where(
+            (c) => c.defaultReason == RecommendationReason.similarToFavorite,
+          )
           .take(8)
           .map((c) {
-        return Recommendation(
-          song: c.song,
-          score: c.score,
-          reason: RecommendationReason.similarToFavorite,
-          explanation: explainer.explain(
-            candidate: c,
-            tasteProfile: tasteProfile,
-            favorites: favorites,
-          ),
-          section: RecommendationSection.becauseYouLiked,
-        );
-      }).toList();
+            return Recommendation(
+              song: c.song,
+              score: c.score,
+              reason: RecommendationReason.similarToFavorite,
+              explanation: explainer.explain(
+                candidate: c,
+                tasteProfile: tasteProfile,
+                favorites: favorites,
+              ),
+              section: RecommendationSection.becauseYouLiked,
+            );
+          })
+          .toList();
       addSection(RecommendationSection.becauseYouLiked, becauseYouLiked);
     }
 
@@ -186,39 +206,43 @@ class RecommendationEngine {
         .where((c) => c.defaultReason == RecommendationReason.frequentArtist)
         .take(8)
         .map((c) {
-      return Recommendation(
-        song: c.song,
-        score: c.score,
-        reason: RecommendationReason.frequentArtist,
-        explanation: explainer.explain(
-          candidate: c,
-          tasteProfile: tasteProfile,
-          favorites: favorites,
-        ),
-        section: RecommendationSection.favoriteArtists,
-      );
-    }).toList();
+          return Recommendation(
+            song: c.song,
+            score: c.score,
+            reason: RecommendationReason.frequentArtist,
+            explanation: explainer.explain(
+              candidate: c,
+              tasteProfile: tasteProfile,
+              favorites: favorites,
+            ),
+            section: RecommendationSection.favoriteArtists,
+          );
+        })
+        .toList();
     addSection(RecommendationSection.favoriteArtists, favoriteArtists);
 
     // Discover New Artists
     final discover = diverseCandidates
-        .where((c) =>
-            c.defaultReason == RecommendationReason.discoverNewArtist ||
-            c.defaultReason == RecommendationReason.discoverNewGenre)
+        .where(
+          (c) =>
+              c.defaultReason == RecommendationReason.discoverNewArtist ||
+              c.defaultReason == RecommendationReason.discoverNewGenre,
+        )
         .take(8)
         .map((c) {
-      return Recommendation(
-        song: c.song,
-        score: c.score,
-        reason: c.defaultReason,
-        explanation: explainer.explain(
-          candidate: c,
-          tasteProfile: tasteProfile,
-          favorites: favorites,
-        ),
-        section: RecommendationSection.discoverNewArtists,
-      );
-    }).toList();
+          return Recommendation(
+            song: c.song,
+            score: c.score,
+            reason: c.defaultReason,
+            explanation: explainer.explain(
+              candidate: c,
+              tasteProfile: tasteProfile,
+              favorites: favorites,
+            ),
+            section: RecommendationSection.discoverNewArtists,
+          );
+        })
+        .toList();
     addSection(RecommendationSection.discoverNewArtists, discover);
 
     // Offline Picks (if downloads exist)
@@ -241,7 +265,9 @@ class RecommendationEngine {
 
   /// Direct helper returning flat top recommendations ("Made For You").
   Future<List<Recommendation>> getForYou({int limit = 20}) async {
-    final sections = await getSections(context: RecommendationContext(limit: limit));
+    final sections = await getSections(
+      context: RecommendationContext(limit: limit),
+    );
     return sections[RecommendationSection.madeForYou] ?? const [];
   }
 
@@ -258,12 +284,15 @@ class RecommendationEngine {
       }
     }
 
-    final sorted = scored.keys.toList()..sort((a, b) => scored[b]!.compareTo(scored[a]!));
+    final sorted = scored.keys.toList()
+      ..sort((a, b) => scored[b]!.compareTo(scored[a]!));
     return sorted.take(limit).toList();
   }
 
   /// Queries pure discovery recommendations.
-  Future<List<Recommendation>> getDiscoverRecommendations({int limit = 20}) async {
+  Future<List<Recommendation>> getDiscoverRecommendations({
+    int limit = 20,
+  }) async {
     final sections = await getSections(
       context: RecommendationContext(discoveryLevel: 'explore', limit: limit),
     );
@@ -274,14 +303,18 @@ class RecommendationEngine {
 
   /// Queries trending recommendations weighted by taste profile.
   Future<List<Recommendation>> getTrendingForYou({int limit = 20}) async {
-    final sections = await getSections(context: RecommendationContext(limit: limit));
+    final sections = await getSections(
+      context: RecommendationContext(limit: limit),
+    );
     return sections[RecommendationSection.trendingForYou] ??
         sections[RecommendationSection.madeForYou] ??
         const [];
   }
 
   /// Queries offline recommendations from local disk downloads.
-  Future<List<Recommendation>> getOfflineRecommendations({int limit = 20}) async {
+  Future<List<Recommendation>> getOfflineRecommendations({
+    int limit = 20,
+  }) async {
     final sections = await getSections(
       context: RecommendationContext(isOffline: true, limit: limit),
       forceRefresh: true,

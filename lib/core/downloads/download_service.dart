@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
+
 import 'download_errors.dart';
 
 /// Cancellation token to cancel active download streams.
@@ -41,7 +43,8 @@ abstract class DownloadService {
 class HttpDownloadService implements DownloadService {
   final http.Client _client;
 
-  HttpDownloadService({http.Client? client}) : _client = client ?? http.Client();
+  HttpDownloadService({http.Client? client})
+    : _client = client ?? http.Client();
 
   @override
   Future<void> downloadFile({
@@ -61,17 +64,23 @@ class HttpDownloadService implements DownloadService {
     try {
       response = await _client.send(request);
     } catch (e) {
-      throw NetworkUnavailableException('Failed to connect to download server: $e');
+      throw NetworkUnavailableException(
+        'Failed to connect to download server: $e',
+      );
     }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       if (response.statusCode == 401 || response.statusCode == 403) {
-        throw DownloadNotAuthorizedException('Server returned status ${response.statusCode}');
+        throw DownloadNotAuthorizedException(
+          'Server returned status ${response.statusCode}',
+        );
       }
       if (response.statusCode == 410) {
         throw DownloadUrlExpiredException('Download URL has expired');
       }
-      throw UnknownDownloadFailureException('Download HTTP failed with status ${response.statusCode}');
+      throw UnknownDownloadFailureException(
+        'Download HTTP failed with status ${response.statusCode}',
+      );
     }
 
     final totalBytes = response.contentLength ?? 0;
@@ -110,7 +119,9 @@ class HttpDownloadService implements DownloadService {
         onError: (error) {
           sink?.close();
           if (!completer.isCompleted) {
-            completer.completeError(DownloadCorruptException('Stream interrupted: $error'));
+            completer.completeError(
+              DownloadCorruptException('Stream interrupted: $error'),
+            );
           }
         },
         onDone: () async {
@@ -122,7 +133,9 @@ class HttpDownloadService implements DownloadService {
             }
           } catch (e) {
             if (!completer.isCompleted) {
-              completer.completeError(StorageFailureException('Failed to write download file: $e'));
+              completer.completeError(
+                StorageFailureException('Failed to write download file: $e'),
+              );
             }
           }
         },
@@ -163,7 +176,8 @@ class FakeDownloadService implements DownloadService {
     }
 
     if (shouldFail) {
-      throw failureException ?? const NetworkUnavailableException('Fake network error');
+      throw failureException ??
+          const NetworkUnavailableException('Fake network error');
     }
 
     // Ensure parent directory exists

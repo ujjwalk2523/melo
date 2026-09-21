@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../features/downloads/domain/download_metadata_repository.dart';
 import '../../features/profile/data/user_preferences_repository.dart';
 import '../../shared/models/song.dart';
@@ -62,8 +63,12 @@ class PlaybackSourceResolver {
 
     // 1. Priority 1: Check for completed local download
     final meta = await downloadRepo.getMetadata(song.id);
-    if (meta != null && meta.status == DownloadStatus.completed && meta.localPath != null) {
-      final isValid = await downloadStorage.validateExistingFile(meta.localPath!);
+    if (meta != null &&
+        meta.status == DownloadStatus.completed &&
+        meta.localPath != null) {
+      final isValid = await downloadStorage.validateExistingFile(
+        meta.localPath!,
+      );
       if (isValid) {
         return LocalFileSource(meta.localPath!, song);
       } else {
@@ -98,10 +103,7 @@ class PlaybackSourceResolver {
     }
 
     // 5. Unavailable
-    return UnavailableSource(
-      'Playback is unavailable for this track.',
-      song,
-    );
+    return UnavailableSource('Playback is unavailable for this track.', song);
   }
 }
 

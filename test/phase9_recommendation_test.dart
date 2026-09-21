@@ -51,7 +51,8 @@ class FakeRecommendationDataSource implements RecommendationDataSource {
   Future<List<Playlist>> getPlaylists() async => playlists;
 
   @override
-  Future<List<Song>> getPlaylistSongs(String playlistId) async => playlistSongs[playlistId] ?? [];
+  Future<List<Song>> getPlaylistSongs(String playlistId) async =>
+      playlistSongs[playlistId] ?? [];
 
   @override
   Future<List<Song>> getDownloadedSongs() async => downloads;
@@ -61,7 +62,9 @@ class FakeRecommendationDataSource implements RecommendationDataSource {
 
   @override
   Future<void> saveFeedback(RecommendationFeedback item) async {
-    feedback.removeWhere((f) => f.targetId == item.targetId && f.feedbackType == item.feedbackType);
+    feedback.removeWhere(
+      (f) => f.targetId == item.targetId && f.feedbackType == item.feedbackType,
+    );
     feedback.add(item);
   }
 
@@ -151,24 +154,31 @@ void main() {
       expect(profile.topArtists, isEmpty);
     });
 
-    test('Completed plays, favorites and playlists build strong affinities', () {
-      const extractor = FeatureExtractor();
-      final profile = extractor.extractTasteProfile(
-        favorites: [songA],
-        history: [songA, songA, songC],
-        playlistSongGroups: [
-          [songA, songB]
-        ],
-        downloads: [songA],
-      );
+    test(
+      'Completed plays, favorites and playlists build strong affinities',
+      () {
+        const extractor = FeatureExtractor();
+        final profile = extractor.extractTasteProfile(
+          favorites: [songA],
+          history: [songA, songA, songC],
+          playlistSongGroups: [
+            [songA, songB],
+          ],
+          downloads: [songA],
+        );
 
-      expect(profile.isColdStart, isFalse);
-      expect(profile.totalFavorites, equals(1));
-      expect(profile.totalPlays, equals(3));
-      expect(profile.topArtists.containsKey('Cyber Synth'), isTrue);
-      expect(profile.topGenres.containsKey('Synthwave'), isTrue);
-      expect(profile.topArtists['Cyber Synth']! > (profile.topArtists['Outrun 84'] ?? 0.0), isTrue);
-    });
+        expect(profile.isColdStart, isFalse);
+        expect(profile.totalFavorites, equals(1));
+        expect(profile.totalPlays, equals(3));
+        expect(profile.topArtists.containsKey('Cyber Synth'), isTrue);
+        expect(profile.topGenres.containsKey('Synthwave'), isTrue);
+        expect(
+          profile.topArtists['Cyber Synth']! >
+              (profile.topArtists['Outrun 84'] ?? 0.0),
+          isTrue,
+        );
+      },
+    );
   });
 
   group('Song Similarity Calculator', () {
@@ -283,7 +293,11 @@ void main() {
 
       expect(candidates, isNotEmpty);
       expect(
-        candidates.any((c) => c.defaultReason == RecommendationReason.trending || c.defaultReason == RecommendationReason.discoverNewArtist),
+        candidates.any(
+          (c) =>
+              c.defaultReason == RecommendationReason.trending ||
+              c.defaultReason == RecommendationReason.discoverNewArtist,
+        ),
         isTrue,
       );
     });
@@ -378,40 +392,47 @@ void main() {
       expect(scoredList, isEmpty);
     });
 
-    test('Repeat penalty dampens score for recently played tracks in history', () {
-      final profile = TasteProfile(
-        topGenres: {'Synthwave': 0.9},
-        topArtists: {'Cyber Synth': 0.9},
-        isColdStart: false,
-      );
+    test(
+      'Repeat penalty dampens score for recently played tracks in history',
+      () {
+        final profile = TasteProfile(
+          topGenres: {'Synthwave': 0.9},
+          topArtists: {'Cyber Synth': 0.9},
+          isColdStart: false,
+        );
 
-      final candidate = RecommendationCandidate(
-        song: songB,
-        source: 'genre_affinity',
-        defaultReason: RecommendationReason.frequentGenre,
-        score: 0.8,
-      );
+        final candidate = RecommendationCandidate(
+          song: songB,
+          source: 'genre_affinity',
+          defaultReason: RecommendationReason.frequentGenre,
+          score: 0.8,
+        );
 
-      final scoredFresh = scorer.scoreCandidates(
-        candidates: [candidate],
-        tasteProfile: profile,
-        favorites: [],
-        history: [],
-        downloads: [],
-        feedback: [],
-      ).first;
+        final scoredFresh = scorer
+            .scoreCandidates(
+              candidates: [candidate],
+              tasteProfile: profile,
+              favorites: [],
+              history: [],
+              downloads: [],
+              feedback: [],
+            )
+            .first;
 
-      final scoredRecent = scorer.scoreCandidates(
-        candidates: [candidate],
-        tasteProfile: profile,
-        favorites: [],
-        history: [songB, songB],
-        downloads: [],
-        feedback: [],
-      ).first;
+        final scoredRecent = scorer
+            .scoreCandidates(
+              candidates: [candidate],
+              tasteProfile: profile,
+              favorites: [],
+              history: [songB, songB],
+              downloads: [],
+              feedback: [],
+            )
+            .first;
 
-      expect(scoredRecent.score, lessThan(scoredFresh.score));
-    });
+        expect(scoredRecent.score, lessThan(scoredFresh.score));
+      },
+    );
 
     test('Hidden genre feedback filters out all tracks matching genre', () {
       final profile = TasteProfile.empty();
@@ -451,14 +472,16 @@ void main() {
         score: 0.8,
       );
 
-      final scoredNormal = scorer.scoreCandidates(
-        candidates: [candidate],
-        tasteProfile: profile,
-        favorites: [],
-        history: [],
-        downloads: [],
-        feedback: [],
-      ).first;
+      final scoredNormal = scorer
+          .scoreCandidates(
+            candidates: [candidate],
+            tasteProfile: profile,
+            favorites: [],
+            history: [],
+            downloads: [],
+            feedback: [],
+          )
+          .first;
 
       final feedback = [
         RecommendationFeedback(
@@ -468,14 +491,16 @@ void main() {
         ),
       ];
 
-      final scoredPenalized = scorer.scoreCandidates(
-        candidates: [candidate],
-        tasteProfile: profile,
-        favorites: [],
-        history: [],
-        downloads: [],
-        feedback: feedback,
-      ).first;
+      final scoredPenalized = scorer
+          .scoreCandidates(
+            candidates: [candidate],
+            tasteProfile: profile,
+            favorites: [],
+            history: [],
+            downloads: [],
+            feedback: feedback,
+          )
+          .first;
 
       expect(scoredPenalized.score, lessThan(scoredNormal.score));
     });
@@ -504,9 +529,7 @@ void main() {
         ),
       );
 
-      final filtered = filter.applyDiversity(
-        candidates: sameArtistCandidates,
-      );
+      final filtered = filter.applyDiversity(candidates: sameArtistCandidates);
 
       final count = filtered.where((r) => r.song.artist == 'One Artist').length;
       expect(count, equals(3));
@@ -532,11 +555,11 @@ void main() {
         ),
       );
 
-      final filtered = filter.applyDiversity(
-        candidates: sameAlbumCandidates,
-      );
+      final filtered = filter.applyDiversity(candidates: sameAlbumCandidates);
 
-      final count = filtered.where((r) => r.song.album == 'Greatest Hits').length;
+      final count = filtered
+          .where((r) => r.song.album == 'Greatest Hits')
+          .length;
       expect(count, equals(2));
     });
   });
@@ -587,39 +610,45 @@ void main() {
   });
 
   group('Recommendation Engine Caching & Invalidation', () {
-    test('Returns cached recommendations within TTL and refreshes when forced', () async {
-      final dataSource = FakeRecommendationDataSource();
-      dataSource.catalog = [songA, songB, songC, songD, songE];
-      dataSource.favorites = [songA];
+    test(
+      'Returns cached recommendations within TTL and refreshes when forced',
+      () async {
+        final dataSource = FakeRecommendationDataSource();
+        dataSource.catalog = [songA, songB, songC, songD, songE];
+        dataSource.favorites = [songA];
 
-      final engine = RecommendationEngine(dataSource: dataSource);
+        final engine = RecommendationEngine(dataSource: dataSource);
 
-      final res1 = await engine.getSections();
-      expect(res1, isNotEmpty);
+        final res1 = await engine.getSections();
+        expect(res1, isNotEmpty);
 
-      // Add new song to favorites
-      dataSource.favorites.add(songB);
+        // Add new song to favorites
+        dataSource.favorites.add(songB);
 
-      // Immediate call returns cached
-      final res2 = await engine.getSections();
-      expect(res2.length, equals(res1.length));
+        // Immediate call returns cached
+        final res2 = await engine.getSections();
+        expect(res2.length, equals(res1.length));
 
-      // Force refresh invalidates cache
-      final res3 = await engine.getSections(forceRefresh: true);
-      expect(res3, isNotEmpty);
-    });
+        // Force refresh invalidates cache
+        final res3 = await engine.getSections(forceRefresh: true);
+        expect(res3, isNotEmpty);
+      },
+    );
 
-    test('getSimilarSongs returns ranked similar songs to a seed song', () async {
-      final dataSource = FakeRecommendationDataSource();
-      dataSource.catalog = [songA, songB, songC, songD, songE];
+    test(
+      'getSimilarSongs returns ranked similar songs to a seed song',
+      () async {
+        final dataSource = FakeRecommendationDataSource();
+        dataSource.catalog = [songA, songB, songC, songD, songE];
 
-      final engine = RecommendationEngine(dataSource: dataSource);
-      final similar = await engine.getSimilarSongs(songA, limit: 3);
+        final engine = RecommendationEngine(dataSource: dataSource);
+        final similar = await engine.getSimilarSongs(songA, limit: 3);
 
-      expect(similar, isNotEmpty);
-      expect(similar.any((s) => s.id == songA.id), isFalse); // Excludes self
-      expect(similar.first.id, equals(songB.id)); // Same artist & genre
-    });
+        expect(similar, isNotEmpty);
+        expect(similar.any((s) => s.id == songA.id), isFalse); // Excludes self
+        expect(similar.first.id, equals(songB.id)); // Same artist & genre
+      },
+    );
   });
 
   group('User Preferences & Settings Integration', () {
@@ -686,11 +715,11 @@ void main() {
             userPreferencesRepositoryProvider.overrideWithValue(prefsRepo),
             recommendationDataSourceProvider.overrideWithValue(dataSource),
             recommendationEngineProvider.overrideWithValue(engine),
-            recentlyPlayedStreamProvider.overrideWith((ref) => Stream.value([])),
+            recentlyPlayedStreamProvider.overrideWith(
+              (ref) => Stream.value([]),
+            ),
           ],
-          child: const MaterialApp(
-            home: HomeScreen(),
-          ),
+          child: const MaterialApp(home: HomeScreen()),
         ),
       );
 
@@ -704,54 +733,57 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('FullPlayerScreen displays More Like This button and opens sheet', (tester) async {
-      final engine = RecommendationEngine(dataSource: dataSource);
-      final notifier = PlayerNotifier(
-        fakePlayer,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-      );
-      await notifier.playSong(songA);
+    testWidgets(
+      'FullPlayerScreen displays More Like This button and opens sheet',
+      (tester) async {
+        final engine = RecommendationEngine(dataSource: dataSource);
+        final notifier = PlayerNotifier(
+          fakePlayer,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+        );
+        await notifier.playSong(songA);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            userPreferencesRepositoryProvider.overrideWithValue(prefsRepo),
-            recommendationDataSourceProvider.overrideWithValue(dataSource),
-            recommendationEngineProvider.overrideWithValue(engine),
-            playerNotifierProvider.overrideWith((ref) => notifier),
-          ],
-          child: const MaterialApp(
-            home: FullPlayerScreen(),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              userPreferencesRepositoryProvider.overrideWithValue(prefsRepo),
+              recommendationDataSourceProvider.overrideWithValue(dataSource),
+              recommendationEngineProvider.overrideWithValue(engine),
+              playerNotifierProvider.overrideWith((ref) => notifier),
+            ],
+            child: const MaterialApp(home: FullPlayerScreen()),
           ),
-        ),
-      );
+        );
 
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
-      // Find More Like This button by tooltip
-      final moreLikeThisBtn = find.byTooltip('More Like This');
-      expect(moreLikeThisBtn, findsOneWidget);
+        // Find More Like This button by tooltip
+        final moreLikeThisBtn = find.byTooltip('More Like This');
+        expect(moreLikeThisBtn, findsOneWidget);
 
-      // Tap it to open modal bottom sheet
-      await tester.tap(moreLikeThisBtn);
-      await tester.pumpAndSettle();
+        // Tap it to open modal bottom sheet
+        await tester.tap(moreLikeThisBtn);
+        await tester.pumpAndSettle();
 
-      // Modal bottom sheet should show header
-      expect(find.textContaining('More Like'), findsOneWidget);
+        // Modal bottom sheet should show header
+        expect(find.textContaining('More Like'), findsOneWidget);
 
-      await tester.pumpWidget(const SizedBox());
-      await tester.pumpAndSettle();
-    });
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+      },
+    );
 
-    testWidgets('ProfileScreen shows Music Intelligence settings and dialogs', (tester) async {
+    testWidgets('ProfileScreen shows Music Intelligence settings and dialogs', (
+      tester,
+    ) async {
       final db = AppDatabase.memory();
 
       await tester.pumpWidget(
@@ -762,9 +794,7 @@ void main() {
             userPreferencesRepositoryProvider.overrideWithValue(prefsRepo),
             recommendationDataSourceProvider.overrideWithValue(dataSource),
           ],
-          child: const MaterialApp(
-            home: ProfileScreen(),
-          ),
+          child: const MaterialApp(home: ProfileScreen()),
         ),
       );
 
@@ -790,42 +820,59 @@ void main() {
   });
 
   group('LocalRecommendationDataSource & Drift Feedback Persistence', () {
-    test('Saves, retrieves, and clears recommendation feedback in Drift', () async {
-      final db = AppDatabase.memory();
-      final localDataSource = LocalRecommendationDataSource(db: db);
+    test(
+      'Saves, retrieves, and clears recommendation feedback in Drift',
+      () async {
+        final db = AppDatabase.memory();
+        final localDataSource = LocalRecommendationDataSource(db: db);
 
-      // Initially empty
-      final initial = await localDataSource.getFeedback();
-      expect(initial, isEmpty);
+        // Initially empty
+        final initial = await localDataSource.getFeedback();
+        expect(initial, isEmpty);
 
-      // Save hideSong feedback
-      final fb1 = RecommendationFeedback(
-        feedbackType: FeedbackType.hideSong,
-        targetId: 'track_123',
-        targetType: 'song',
-      );
-      await localDataSource.saveFeedback(fb1);
+        // Save hideSong feedback
+        final fb1 = RecommendationFeedback(
+          feedbackType: FeedbackType.hideSong,
+          targetId: 'track_123',
+          targetType: 'song',
+        );
+        await localDataSource.saveFeedback(fb1);
 
-      // Save hideArtist feedback
-      final fb2 = RecommendationFeedback(
-        feedbackType: FeedbackType.hideArtist,
-        targetId: 'Artist XYZ',
-        targetType: 'artist',
-      );
-      await localDataSource.saveFeedback(fb2);
+        // Save hideArtist feedback
+        final fb2 = RecommendationFeedback(
+          feedbackType: FeedbackType.hideArtist,
+          targetId: 'Artist XYZ',
+          targetType: 'artist',
+        );
+        await localDataSource.saveFeedback(fb2);
 
-      final retrieved = await localDataSource.getFeedback();
-      expect(retrieved.length, equals(2));
-      expect(retrieved.any((f) => f.targetId == 'track_123' && f.feedbackType == FeedbackType.hideSong), isTrue);
-      expect(retrieved.any((f) => f.targetId == 'Artist XYZ' && f.feedbackType == FeedbackType.hideArtist), isTrue);
+        final retrieved = await localDataSource.getFeedback();
+        expect(retrieved.length, equals(2));
+        expect(
+          retrieved.any(
+            (f) =>
+                f.targetId == 'track_123' &&
+                f.feedbackType == FeedbackType.hideSong,
+          ),
+          isTrue,
+        );
+        expect(
+          retrieved.any(
+            (f) =>
+                f.targetId == 'Artist XYZ' &&
+                f.feedbackType == FeedbackType.hideArtist,
+          ),
+          isTrue,
+        );
 
-      // Clear feedback
-      await localDataSource.clearFeedback();
-      final afterClear = await localDataSource.getFeedback();
-      expect(afterClear, isEmpty);
+        // Clear feedback
+        await localDataSource.clearFeedback();
+        final afterClear = await localDataSource.getFeedback();
+        expect(afterClear, isEmpty);
 
-      await db.close();
-    });
+        await db.close();
+      },
+    );
   });
 
   group('Domain Models & Serialization', () {
@@ -872,14 +919,21 @@ void main() {
       expect(revived.targetType, equals('genre'));
     });
 
-    test('RecommendationWeights.forDiscoveryLevel configures exploration ratios', () {
-      final familiarWeights = RecommendationWeights.forDiscoveryLevel('familiar');
-      expect(familiarWeights.familiarRatio, equals(0.85));
-      expect(familiarWeights.discoveryRatio, equals(0.15));
+    test(
+      'RecommendationWeights.forDiscoveryLevel configures exploration ratios',
+      () {
+        final familiarWeights = RecommendationWeights.forDiscoveryLevel(
+          'familiar',
+        );
+        expect(familiarWeights.familiarRatio, equals(0.85));
+        expect(familiarWeights.discoveryRatio, equals(0.15));
 
-      final exploreWeights = RecommendationWeights.forDiscoveryLevel('explore');
-      expect(exploreWeights.familiarRatio, equals(0.50));
-      expect(exploreWeights.discoveryRatio, equals(0.50));
-    });
+        final exploreWeights = RecommendationWeights.forDiscoveryLevel(
+          'explore',
+        );
+        expect(exploreWeights.familiarRatio, equals(0.50));
+        expect(exploreWeights.discoveryRatio, equals(0.50));
+      },
+    );
   });
 }

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:melo/core/database/database_providers.dart';
 import 'package:melo/core/recommendations/data/local_recommendation_data_source.dart';
@@ -10,14 +11,7 @@ import 'package:melo/core/recommendations/engine/recommendation_engine.dart';
 import 'package:melo/core/recommendations/utils/recommendation_weights.dart';
 import 'package:melo/features/profile/data/user_preferences_repository.dart';
 
-enum RecommendationStatus {
-  idle,
-  loading,
-  ready,
-  refreshing,
-  empty,
-  error,
-}
+enum RecommendationStatus { idle, loading, ready, refreshing, empty, error }
 
 class RecommendationState {
   final RecommendationStatus status;
@@ -59,11 +53,15 @@ class RecommendationState {
 final recommendationWeightsProvider = Provider<RecommendationWeights>((ref) {
   final prefsRepo = ref.watch(userPreferencesRepositoryProvider);
   final prefs = prefsRepo?.getPreferences() ?? const UserPreferences();
-  return RecommendationWeights.forDiscoveryLevel(prefs.offlineOnly ? 'familiar' : prefs.discoveryLevel);
+  return RecommendationWeights.forDiscoveryLevel(
+    prefs.offlineOnly ? 'familiar' : prefs.discoveryLevel,
+  );
 });
 
 /// Recommendation data source provider.
-final recommendationDataSourceProvider = Provider<RecommendationDataSource>((ref) {
+final recommendationDataSourceProvider = Provider<RecommendationDataSource>((
+  ref,
+) {
   final db = ref.watch(appDatabaseProvider);
   final prefsRepo = ref.watch(userPreferencesRepositoryProvider);
   return LocalRecommendationDataSource(db: db, preferencesRepo: prefsRepo);
@@ -73,10 +71,7 @@ final recommendationDataSourceProvider = Provider<RecommendationDataSource>((ref
 final recommendationEngineProvider = Provider<RecommendationEngine>((ref) {
   final dataSource = ref.watch(recommendationDataSourceProvider);
   final weights = ref.watch(recommendationWeightsProvider);
-  return RecommendationEngine(
-    dataSource: dataSource,
-    weights: weights,
-  );
+  return RecommendationEngine(dataSource: dataSource, weights: weights);
 });
 
 /// Reactive taste profile stream/future.
@@ -97,20 +92,27 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
   }
 
   Future<void> loadRecommendations({bool forceRefresh = false}) async {
-    if (state.status == RecommendationStatus.loading || state.status == RecommendationStatus.refreshing) {
+    if (state.status == RecommendationStatus.loading ||
+        state.status == RecommendationStatus.refreshing) {
       return;
     }
 
     state = state.copyWith(
-      status: forceRefresh ? RecommendationStatus.refreshing : RecommendationStatus.loading,
+      status: forceRefresh
+          ? RecommendationStatus.refreshing
+          : RecommendationStatus.loading,
     );
 
     try {
-      final tasteProfile = await _engine.getTasteProfile(forceRefresh: forceRefresh);
+      final tasteProfile = await _engine.getTasteProfile(
+        forceRefresh: forceRefresh,
+      );
       final sections = await _engine.getSections(forceRefresh: forceRefresh);
 
       state = state.copyWith(
-        status: sections.isEmpty ? RecommendationStatus.empty : RecommendationStatus.ready,
+        status: sections.isEmpty
+            ? RecommendationStatus.empty
+            : RecommendationStatus.ready,
         sections: sections,
         tasteProfile: tasteProfile,
         isColdStart: tasteProfile.isColdStart,
@@ -143,6 +145,6 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
 
 final recommendationStateProvider =
     StateNotifierProvider<RecommendationNotifier, RecommendationState>((ref) {
-  final engine = ref.watch(recommendationEngineProvider);
-  return RecommendationNotifier(engine);
-});
+      final engine = ref.watch(recommendationEngineProvider);
+      return RecommendationNotifier(engine);
+    });

@@ -56,8 +56,12 @@ class DownloadMetadataRepositoryImpl implements DownloadMetadataRepository {
     final companion = DownloadsTableCompanion(
       status: Value(status.name),
       updatedAt: Value(DateTime.now()),
-      errorMessage: errorMessage != null ? Value(errorMessage) : const Value.absent(),
-      downloadedBytes: downloadedBytes != null ? Value(downloadedBytes) : const Value.absent(),
+      errorMessage: errorMessage != null
+          ? Value(errorMessage)
+          : const Value.absent(),
+      downloadedBytes: downloadedBytes != null
+          ? Value(downloadedBytes)
+          : const Value.absent(),
       totalBytes: totalBytes != null ? Value(totalBytes) : const Value.absent(),
       localPath: localPath != null ? Value(localPath) : const Value.absent(),
     );

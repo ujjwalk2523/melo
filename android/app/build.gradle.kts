@@ -30,17 +30,16 @@ android {
         versionName = flutter.versionName
     }
 
-    packaging {
-        jniLibs {
-            keepDebugSymbols.add("**/*")
-        }
-    }
-
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
@@ -56,7 +55,7 @@ flutter {
 }
 
 tasks.whenTaskAdded {
-    if (name.contains("DuplicateClasses") || name.contains("stripDebug") || name.contains("StripDebugSymbols") || name.contains("strip")) {
+    if (name.contains("DuplicateClasses") || name.contains("stripDebug") || name.contains("StripDebugSymbols") || name.contains("strip") || name.contains("ExtractNativeDebugMetadata") || name.contains("extractReleaseNativeSymbolTables") || name.contains("NativeSymbolTables")) {
         enabled = false
     }
 }

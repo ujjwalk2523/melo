@@ -1,4 +1,5 @@
 import 'package:melo/shared/models/song.dart';
+
 import 'recommendation_reason.dart';
 
 /// An intermediate candidate song evaluated during the recommendation pipeline.

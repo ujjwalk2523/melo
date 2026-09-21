@@ -1,5 +1,7 @@
 import 'dart:math' as math;
+
 import 'package:melo/shared/models/song.dart';
+
 import 'recommendation_weights.dart';
 
 /// Provider-neutral song similarity engine calculating multi-attribute cosine/jaccard proximity.

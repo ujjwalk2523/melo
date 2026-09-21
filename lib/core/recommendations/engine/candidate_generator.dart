@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:melo/core/recommendations/domain/recommendation_candidate.dart';
 import 'package:melo/core/recommendations/domain/recommendation_context.dart';
 import 'package:melo/core/recommendations/domain/recommendation_reason.dart';
@@ -34,7 +35,12 @@ class CandidateGenerator {
 
     final candidateMap = <String, RecommendationCandidate>{};
 
-    void addCandidate(Song song, String source, RecommendationReason reason, {double baseScore = 0.5}) {
+    void addCandidate(
+      Song song,
+      String source,
+      RecommendationReason reason, {
+      double baseScore = 0.5,
+    }) {
       if (!candidateMap.containsKey(song.id)) {
         candidateMap[song.id] = RecommendationCandidate(
           song: song,
@@ -133,7 +139,9 @@ class CandidateGenerator {
     // Source 7: New Artists (Discovery)
     for (final song in catalog) {
       final isNewArtist = !tasteProfile.topArtists.containsKey(song.artist);
-      if (isNewArtist && song.genre != null && tasteProfile.topGenres.containsKey(song.genre)) {
+      if (isNewArtist &&
+          song.genre != null &&
+          tasteProfile.topGenres.containsKey(song.genre)) {
         addCandidate(
           song,
           'new_artists',
@@ -146,7 +154,9 @@ class CandidateGenerator {
     // Source 8: New Genres (Exploration)
     for (final song in catalog) {
       final genre = song.genre?.trim();
-      if (genre != null && genre.isNotEmpty && !tasteProfile.topGenres.containsKey(genre)) {
+      if (genre != null &&
+          genre.isNotEmpty &&
+          !tasteProfile.topGenres.containsKey(genre)) {
         addCandidate(
           song,
           'new_genres',
@@ -206,7 +216,9 @@ class CandidateGenerator {
     RecommendationContext context,
   ) {
     final candidates = <RecommendationCandidate>[];
-    final random = context.seed != null ? math.Random(context.seed!) : math.Random(42);
+    final random = context.seed != null
+        ? math.Random(context.seed!)
+        : math.Random(42);
 
     final shuffled = List<Song>.from(catalog)..shuffle(random);
     for (int i = 0; i < shuffled.length; i++) {
@@ -215,7 +227,9 @@ class CandidateGenerator {
         RecommendationCandidate(
           song: song,
           source: 'cold_start_curated',
-          defaultReason: i < 5 ? RecommendationReason.trending : RecommendationReason.freshPick,
+          defaultReason: i < 5
+              ? RecommendationReason.trending
+              : RecommendationReason.freshPick,
           score: 0.50 - (i * 0.01),
         ),
       );

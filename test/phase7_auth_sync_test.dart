@@ -60,7 +60,8 @@ class FakeAuthApi extends AuthApi {
     if (shouldFail) {
       throw const AuthApiException('Invalid email or password', 401);
     }
-    final user = registeredUsers[email] ??
+    final user =
+        registeredUsers[email] ??
         AuthUser(
           id: 'usr_${email.hashCode}',
           email: email,
@@ -123,7 +124,10 @@ class FakeSyncRepository extends SyncRepository {
   }
 
   @override
-  Future<int> pushOperations(String token, List<SyncQueueOperation> operations) async {
+  Future<int> pushOperations(
+    String token,
+    List<SyncQueueOperation> operations,
+  ) async {
     pushedOps.addAll(operations);
     return operations.length;
   }
@@ -153,34 +157,37 @@ void main() {
       expect(fromJson.avatarUrl, equals('https://example.com/avatar.png'));
     });
 
-    test('InMemoryAuthSessionStorage stores, retrieves, and clears session', () async {
-      final storage = InMemoryAuthSessionStorage();
+    test(
+      'InMemoryAuthSessionStorage stores, retrieves, and clears session',
+      () async {
+        final storage = InMemoryAuthSessionStorage();
 
-      expect(await storage.getAccessToken(), isNull);
-      expect(await storage.getRefreshToken(), isNull);
-      expect(await storage.getUser(), isNull);
+        expect(await storage.getAccessToken(), isNull);
+        expect(await storage.getRefreshToken(), isNull);
+        expect(await storage.getUser(), isNull);
 
-      await storage.saveTokens(
-        accessToken: 'access_123',
-        refreshToken: 'refresh_456',
-      );
-      final user = AuthUser(
-        id: 'u1',
-        email: 'u1@melo.stream',
-        displayName: 'User 1',
-        createdAt: DateTime.now(),
-      );
-      await storage.saveUser(user);
+        await storage.saveTokens(
+          accessToken: 'access_123',
+          refreshToken: 'refresh_456',
+        );
+        final user = AuthUser(
+          id: 'u1',
+          email: 'u1@melo.stream',
+          displayName: 'User 1',
+          createdAt: DateTime.now(),
+        );
+        await storage.saveUser(user);
 
-      expect(await storage.getAccessToken(), equals('access_123'));
-      expect(await storage.getRefreshToken(), equals('refresh_456'));
-      expect((await storage.getUser())?.email, equals('u1@melo.stream'));
+        expect(await storage.getAccessToken(), equals('access_123'));
+        expect(await storage.getRefreshToken(), equals('refresh_456'));
+        expect((await storage.getUser())?.email, equals('u1@melo.stream'));
 
-      await storage.clearSession();
-      expect(await storage.getAccessToken(), isNull);
-      expect(await storage.getRefreshToken(), isNull);
-      expect(await storage.getUser(), isNull);
-    });
+        await storage.clearSession();
+        expect(await storage.getAccessToken(), isNull);
+        expect(await storage.getRefreshToken(), isNull);
+        expect(await storage.getUser(), isNull);
+      },
+    );
   });
 
   group('Phase 7: AuthRepository & AuthNotifier Lifecycle', () {
@@ -259,49 +266,55 @@ void main() {
       await db.close();
     });
 
-    test('Database schema version is 2 with SyncQueueTable and SyncMetadataTable', () {
-      expect(db.schemaVersion, equals(2));
-      expect(db.syncQueueTable, isNotNull);
-      expect(db.syncMetadataTable, isNotNull);
-    });
+    test(
+      'Database schema version is 2 with SyncQueueTable and SyncMetadataTable',
+      () {
+        expect(db.schemaVersion, equals(2));
+        expect(db.syncQueueTable, isNotNull);
+        expect(db.syncMetadataTable, isNotNull);
+      },
+    );
 
-    test('Enqueues, queries, and marks completed sync operations in Drift', () async {
-      expect(await queue.getPendingCount(), equals(0));
+    test(
+      'Enqueues, queries, and marks completed sync operations in Drift',
+      () async {
+        expect(await queue.getPendingCount(), equals(0));
 
-      await queue.enqueue(
-        id: 'op_fav_1',
-        userId: 'usr_test',
-        entityType: 'favorite',
-        entityId: 'audius:song_1',
-        operationType: 'upsert',
-        payload: {'title': 'Song 1'},
-      );
+        await queue.enqueue(
+          id: 'op_fav_1',
+          userId: 'usr_test',
+          entityType: 'favorite',
+          entityId: 'audius:song_1',
+          operationType: 'upsert',
+          payload: {'title': 'Song 1'},
+        );
 
-      await queue.enqueue(
-        id: 'op_pl_1',
-        userId: 'usr_test',
-        entityType: 'playlist',
-        entityId: 'pl_100',
-        operationType: 'upsert',
-        payload: {'name': 'Chill Vibes'},
-      );
+        await queue.enqueue(
+          id: 'op_pl_1',
+          userId: 'usr_test',
+          entityType: 'playlist',
+          entityId: 'pl_100',
+          operationType: 'upsert',
+          payload: {'name': 'Chill Vibes'},
+        );
 
-      expect(await queue.getPendingCount(), equals(2));
+        expect(await queue.getPendingCount(), equals(2));
 
-      final pending = await queue.getPendingOperations();
-      expect(pending.length, equals(2));
-      expect(pending[0].id, equals('op_fav_1'));
-      expect(pending[0].entityType, equals('favorite'));
-      expect(pending[1].id, equals('op_pl_1'));
-      expect(pending[1].entityType, equals('playlist'));
+        final pending = await queue.getPendingOperations();
+        expect(pending.length, equals(2));
+        expect(pending[0].id, equals('op_fav_1'));
+        expect(pending[0].entityType, equals('favorite'));
+        expect(pending[1].id, equals('op_pl_1'));
+        expect(pending[1].entityType, equals('playlist'));
 
-      // Mark first completed
-      await queue.markCompleted(['op_fav_1']);
-      expect(await queue.getPendingCount(), equals(1));
+        // Mark first completed
+        await queue.markCompleted(['op_fav_1']);
+        expect(await queue.getPendingCount(), equals(1));
 
-      final remaining = await queue.getPendingOperations();
-      expect(remaining.first.id, equals('op_pl_1'));
-    });
+        final remaining = await queue.getPendingOperations();
+        expect(remaining.first.id, equals('op_pl_1'));
+      },
+    );
 
     test('Sync operations survive database close and reopen', () async {
       final executor = NativeDatabase.memory();
@@ -329,22 +342,25 @@ void main() {
       await dbB.close();
     });
 
-    test('SyncQueue failure tracking increments retryCount and records lastError', () async {
-      await queue.enqueue(
-        id: 'op_fail_test',
-        entityType: 'preference',
-        entityId: 'pref',
-        operationType: 'upsert',
-        payload: {},
-      );
+    test(
+      'SyncQueue failure tracking increments retryCount and records lastError',
+      () async {
+        await queue.enqueue(
+          id: 'op_fail_test',
+          entityType: 'preference',
+          entityId: 'pref',
+          operationType: 'upsert',
+          payload: {},
+        );
 
-      await queue.markFailed('op_fail_test', 'HTTP 500 Internal Error');
+        await queue.markFailed('op_fail_test', 'HTTP 500 Internal Error');
 
-      final pending = await queue.getPendingOperations();
-      expect(pending.first.status, equals('failed'));
-      expect(pending.first.retryCount, equals(1));
-      expect(pending.first.lastError, equals('HTTP 500 Internal Error'));
-    });
+        final pending = await queue.getPendingOperations();
+        expect(pending.first.status, equals('failed'));
+        expect(pending.first.retryCount, equals(1));
+        expect(pending.first.lastError, equals('HTTP 500 Internal Error'));
+      },
+    );
   });
 
   group('Phase 7: Conflict Resolution Rules', () {
@@ -396,20 +412,23 @@ void main() {
       );
     });
 
-    test('Listening history merge: max playCount and latest timestamp preserved', () {
-      final time1 = DateTime(2026, 9, 20);
-      final time2 = DateTime(2026, 9, 21);
+    test(
+      'Listening history merge: max playCount and latest timestamp preserved',
+      () {
+        final time1 = DateTime(2026, 9, 20);
+        final time2 = DateTime(2026, 9, 21);
 
-      final merged = SyncConflictResolver.mergeHistoryEntry(
-        localPlayCount: 5,
-        localPlayedAt: time1,
-        cloudPlayCount: 8,
-        cloudPlayedAt: time2,
-      );
+        final merged = SyncConflictResolver.mergeHistoryEntry(
+          localPlayCount: 5,
+          localPlayedAt: time1,
+          cloudPlayCount: 8,
+          cloudPlayedAt: time2,
+        );
 
-      expect(merged.playCount, equals(8));
-      expect(merged.playedAt, equals(time2));
-    });
+        expect(merged.playCount, equals(8));
+        expect(merged.playedAt, equals(time2));
+      },
+    );
   });
 
   group('Phase 7: SyncEngine Integration', () {
@@ -430,52 +449,55 @@ void main() {
       await db.close();
     });
 
-    test('performLoginSync merges cloud favorites and playlists into local Drift', () async {
-      api.mockPullData = CloudSyncData(
-        favorites: [
-          {
-            'songId': 'audius:cloud_track_1',
-            'songMetadata': {
-              'provider': 'audius',
-              'title': 'Cloud Star',
-              'artist': 'Aura',
-              'album': 'Orbit',
-              'artworkUrl': 'https://example.com/art.jpg',
-              'durationMs': 210000,
+    test(
+      'performLoginSync merges cloud favorites and playlists into local Drift',
+      () async {
+        api.mockPullData = CloudSyncData(
+          favorites: [
+            {
+              'songId': 'audius:cloud_track_1',
+              'songMetadata': {
+                'provider': 'audius',
+                'title': 'Cloud Star',
+                'artist': 'Aura',
+                'album': 'Orbit',
+                'artworkUrl': 'https://example.com/art.jpg',
+                'durationMs': 210000,
+              },
+              'createdAt': DateTime.now().toIso8601String(),
             },
-            'createdAt': DateTime.now().toIso8601String(),
-          }
-        ],
-        playlists: [
-          {
-            'id': 'pl_cloud_01',
-            'name': 'Cloud Waves',
-            'description': 'Synced from cloud',
-            'createdAt': DateTime.now().toIso8601String(),
-            'updatedAt': DateTime.now().toIso8601String(),
-          }
-        ],
-        playlistSongs: [],
-        history: [],
-        preferences: null,
-        metadata: {'serverRevision': 2},
-        serverTimestamp: DateTime.now(),
-      );
+          ],
+          playlists: [
+            {
+              'id': 'pl_cloud_01',
+              'name': 'Cloud Waves',
+              'description': 'Synced from cloud',
+              'createdAt': DateTime.now().toIso8601String(),
+              'updatedAt': DateTime.now().toIso8601String(),
+            },
+          ],
+          playlistSongs: [],
+          history: [],
+          preferences: null,
+          metadata: {'serverRevision': 2},
+          serverTimestamp: DateTime.now(),
+        );
 
-      await engine.performLoginSync('token_123', 'user_123');
+        await engine.performLoginSync('token_123', 'user_123');
 
-      // Verify merged into local Drift tables
-      final localFavorites = await db.select(db.favoritesTable).get();
-      expect(localFavorites.length, equals(1));
-      expect(localFavorites.first.songId, equals('audius:cloud_track_1'));
+        // Verify merged into local Drift tables
+        final localFavorites = await db.select(db.favoritesTable).get();
+        expect(localFavorites.length, equals(1));
+        expect(localFavorites.first.songId, equals('audius:cloud_track_1'));
 
-      final localPlaylists = await db.select(db.playlistsTable).get();
-      expect(localPlaylists.length, equals(1));
-      expect(localPlaylists.first.name, equals('Cloud Waves'));
+        final localPlaylists = await db.select(db.playlistsTable).get();
+        expect(localPlaylists.length, equals(1));
+        expect(localPlaylists.first.name, equals('Cloud Waves'));
 
-      expect(engine.state.status, equals(SyncStatus.success));
-      expect(engine.state.lastSuccessfulSyncAt, isNotNull);
-    });
+        expect(engine.state.status, equals(SyncStatus.success));
+        expect(engine.state.lastSuccessfulSyncAt, isNotNull);
+      },
+    );
 
     test('performLoginSync uploads queued local pending changes', () async {
       await queue.enqueue(
@@ -496,31 +518,41 @@ void main() {
       expect(await queue.getPendingCount(), equals(0));
     });
 
-    test('Local changes remain usable when offline and marked pending', () async {
-      // User creates a favorite offline
-      await engine.enqueueOperation(
-        id: 'op_offline_fav',
-        entityType: 'favorite',
-        entityId: 'jamendo:offline_track',
-        operationType: 'upsert',
-        payload: {'title': 'Offline Song'},
-      );
+    test(
+      'Local changes remain usable when offline and marked pending',
+      () async {
+        // User creates a favorite offline
+        await engine.enqueueOperation(
+          id: 'op_offline_fav',
+          entityType: 'favorite',
+          entityId: 'jamendo:offline_track',
+          operationType: 'upsert',
+          payload: {'title': 'Offline Song'},
+        );
 
-      expect(await queue.getPendingCount(), equals(1));
-      expect(engine.state.pendingCount, equals(1));
-      expect(engine.state.humanReadableStatus, contains('pending sync'));
-    });
+        expect(await queue.getPendingCount(), equals(1));
+        expect(engine.state.pendingCount, equals(1));
+        expect(engine.state.humanReadableStatus, contains('pending sync'));
+      },
+    );
   });
 
   group('Phase 7: Profile Screen Auth Integration Widget Tests', () {
-    testWidgets('ProfileScreen renders guest mode when unauthenticated', (tester) async {
+    testWidgets('ProfileScreen renders guest mode when unauthenticated', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             appDatabaseProvider.overrideWithValue(AppDatabase.memory()),
-            authStateProvider.overrideWith((ref) => AuthNotifier(
-                  AuthRepository(api: FakeAuthApi(), storage: InMemoryAuthSessionStorage()),
-                )),
+            authStateProvider.overrideWith(
+              (ref) => AuthNotifier(
+                AuthRepository(
+                  api: FakeAuthApi(),
+                  storage: InMemoryAuthSessionStorage(),
+                ),
+              ),
+            ),
           ],
           child: const MaterialApp(home: ProfileScreen()),
         ),
@@ -533,48 +565,54 @@ void main() {
       expect(find.text('Playback & Audio Quality'), findsOneWidget);
     });
 
-    testWidgets('ProfileScreen renders user profile and logout button when authenticated', (tester) async {
-      final user = AuthUser(
-        id: 'u_authenticated',
-        email: 'alice@melo.stream',
-        displayName: 'Alice Listener',
-        createdAt: DateTime.now(),
-      );
-      final fakeApi = FakeAuthApi();
-      fakeApi.mockUser = user;
+    testWidgets(
+      'ProfileScreen renders user profile and logout button when authenticated',
+      (tester) async {
+        final user = AuthUser(
+          id: 'u_authenticated',
+          email: 'alice@melo.stream',
+          displayName: 'Alice Listener',
+          createdAt: DateTime.now(),
+        );
+        final fakeApi = FakeAuthApi();
+        fakeApi.mockUser = user;
 
-      final storage = InMemoryAuthSessionStorage();
-      await storage.saveTokens(accessToken: 'token_123', refreshToken: 'refresh_123');
-      await storage.saveUser(user);
+        final storage = InMemoryAuthSessionStorage();
+        await storage.saveTokens(
+          accessToken: 'token_123',
+          refreshToken: 'refresh_123',
+        );
+        await storage.saveUser(user);
 
-      final authNotifier = AuthNotifier(
-        AuthRepository(api: fakeApi, storage: storage),
-      );
-      await authNotifier.restoreSession();
+        final authNotifier = AuthNotifier(
+          AuthRepository(api: fakeApi, storage: storage),
+        );
+        await authNotifier.restoreSession();
 
-      final db = AppDatabase.memory();
+        final db = AppDatabase.memory();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            appDatabaseProvider.overrideWithValue(db),
-            authStateProvider.overrideWith((ref) => authNotifier),
-          ],
-          child: const MaterialApp(home: ProfileScreen()),
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              appDatabaseProvider.overrideWithValue(db),
+              authStateProvider.overrideWith((ref) => authNotifier),
+            ],
+            child: const MaterialApp(home: ProfileScreen()),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('Alice Listener'), findsOneWidget);
-      expect(find.text('alice@melo.stream'), findsOneWidget);
-      expect(find.text('MELO HI-FI CLOUD'), findsOneWidget);
-      expect(find.text('Sync Now'), findsOneWidget);
-      expect(find.text('Log Out'), findsOneWidget);
-      expect(find.text('Delete Account'), findsOneWidget);
+        expect(find.text('Alice Listener'), findsOneWidget);
+        expect(find.text('alice@melo.stream'), findsOneWidget);
+        expect(find.text('MELO HI-FI CLOUD'), findsOneWidget);
+        expect(find.text('Sync Now'), findsOneWidget);
+        expect(find.text('Log Out'), findsOneWidget);
+        expect(find.text('Delete Account'), findsOneWidget);
 
-      await db.close();
-    });
+        await db.close();
+      },
+    );
   });
 
   group('Phase 7: Auth Screens Smoke Tests', () {
@@ -582,9 +620,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authStateProvider.overrideWith((ref) => AuthNotifier(
-                  AuthRepository(api: FakeAuthApi(), storage: InMemoryAuthSessionStorage()),
-                )),
+            authStateProvider.overrideWith(
+              (ref) => AuthNotifier(
+                AuthRepository(
+                  api: FakeAuthApi(),
+                  storage: InMemoryAuthSessionStorage(),
+                ),
+              ),
+            ),
           ],
           child: const MaterialApp(home: LoginScreen()),
         ),
@@ -599,13 +642,20 @@ void main() {
       expect(find.text('Create Account'), findsOneWidget);
     });
 
-    testWidgets('RegisterScreen renders inputs and submit button', (tester) async {
+    testWidgets('RegisterScreen renders inputs and submit button', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authStateProvider.overrideWith((ref) => AuthNotifier(
-                  AuthRepository(api: FakeAuthApi(), storage: InMemoryAuthSessionStorage()),
-                )),
+            authStateProvider.overrideWith(
+              (ref) => AuthNotifier(
+                AuthRepository(
+                  api: FakeAuthApi(),
+                  storage: InMemoryAuthSessionStorage(),
+                ),
+              ),
+            ),
           ],
           child: const MaterialApp(home: RegisterScreen()),
         ),

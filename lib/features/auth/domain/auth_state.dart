@@ -24,7 +24,8 @@ class AuthState {
     this.errorMessage,
   });
 
-  bool get isAuthenticated => status == AuthStatus.authenticated && user != null;
+  bool get isAuthenticated =>
+      status == AuthStatus.authenticated && user != null;
   bool get isLoading =>
       status == AuthStatus.authenticating ||
       status == AuthStatus.refreshing ||

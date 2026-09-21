@@ -1,11 +1,29 @@
 import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 import { MusicService } from '../services/music.service.js';
+
+const trackParamSchema = z.object({
+  provider: z.string().min(1).max(50),
+  trackId: z.string().min(1).max(200),
+});
 
 export function createTrackController(musicService: MusicService) {
   return {
     getTrack: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
-        const { provider, trackId } = req.params;
+        const parsed = trackParamSchema.safeParse(req.params);
+        if (!parsed.success) {
+          res.status(400).json({
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid provider or trackId parameter',
+            },
+          });
+          return;
+        }
+
+        const { provider, trackId } = parsed.data;
         const song = await musicService.getTrack(provider, trackId);
 
         res.status(200).json({

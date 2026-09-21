@@ -15,28 +15,39 @@ import { AuthService } from './auth/auth.service.js';
 import { SyncService } from './sync/sync.service.js';
 import { createAuthRouter } from './routes/auth.routes.js';
 import { createSyncRouter } from './routes/sync.routes.js';
+import { securityHeaders } from './middleware/security-headers.middleware.js';
+import { generalRateLimiter, authRateLimiter } from './middleware/rate-limiter.middleware.js';
+import { AppError } from './utils/app-error.js';
 
 export function createApp(customMusicService?: MusicService): Express {
   const app = express();
 
-  // Configure CORS
+  // Configure production-hardened CORS
   const allowedOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow mobile apps, curl, server-to-server (no Origin header)
+        // Allow mobile apps, native clients, and curl (no Origin header)
         if (!origin) return callback(null, true);
         if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
           return callback(null, true);
         }
-        return callback(null, true); // Permissive in dev mode for local emulator testing
+        if (env.NODE_ENV === 'development') {
+          return callback(null, true); // Permissive only in local development
+        }
+        return callback(new AppError('Origin rejected by CORS policy', 403, 'CORS_ERROR'));
       },
       methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     })
   );
 
-  app.use(express.json());
+  // Security headers & bounded body payload size
+  app.use(securityHeaders);
+  app.use(express.json({ limit: '1mb' }));
+
+  // Global rate limiter
+  app.use(generalRateLimiter.middleware());
 
   // Instantiate services
   const registry = new ProviderRegistry();
@@ -50,7 +61,7 @@ export function createApp(customMusicService?: MusicService): Express {
   app.use('/api', createSearchRouter(musicService));
   app.use('/api', createTrackRouter(musicService));
   app.use('/api', createRecommendationRouter(musicService));
-  app.use('/api', createAuthRouter(authService));
+  app.use('/api', authRateLimiter.middleware(), createAuthRouter(authService));
   app.use('/api', createSyncRouter(syncService, authService));
 
   // 404 and error handlers

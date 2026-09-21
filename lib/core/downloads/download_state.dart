@@ -21,12 +21,12 @@ class TrackDownloadState {
   });
 
   const TrackDownloadState.notDownloaded(this.songId)
-      : status = DownloadStatus.removed,
-        progress = 0.0,
-        bytesDownloaded = 0,
-        totalBytes = 0,
-        localPath = null,
-        errorMessage = null;
+    : status = DownloadStatus.removed,
+      progress = 0.0,
+      bytesDownloaded = 0,
+      totalBytes = 0,
+      localPath = null,
+      errorMessage = null;
 
   bool get isCompleted => status == DownloadStatus.completed;
   bool get isDownloading => status == DownloadStatus.downloading;

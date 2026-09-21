@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,8 +59,10 @@ void main() {
     album: 'Cosmic Journey',
     duration: Duration(seconds: 180),
     artworkUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23',
-    streamUrl: 'https://audius-creator.audius.co/v1/tracks/audius_track_1/stream',
-    downloadUrl: 'https://audius-creator.audius.co/v1/tracks/audius_track_1/download',
+    streamUrl:
+        'https://audius-creator.audius.co/v1/tracks/audius_track_1/stream',
+    downloadUrl:
+        'https://audius-creator.audius.co/v1/tracks/audius_track_1/download',
     provider: 'audius',
     isDownloadable: true,
   );
@@ -134,7 +137,10 @@ void main() {
 
       final perm2 = evaluator.evaluate(restrictedSong);
       expect(perm2.isAuthorized, isFalse);
-      expect((perm2 as NotAuthorizedDownloadPermission).reason, contains("isn't available"));
+      expect(
+        (perm2 as NotAuthorizedDownloadPermission).reason,
+        contains("isn't available"),
+      );
 
       final missingUrlSong = downloadableSong1.copyWith(downloadUrl: '');
       final perm3 = evaluator.evaluate(missingUrlSong);
@@ -163,100 +169,115 @@ void main() {
   });
 
   group('Phase 8: Download Execution, Progress & State Machine', () {
-    test('Executes download lifecycle: pending -> downloading -> completed', () async {
-      final manager = DownloadManager(
-        storage: storage,
-        service: downloadService,
-        repository: downloadRepo,
-        preferencesRepo: prefsRepo,
-      );
+    test(
+      'Executes download lifecycle: pending -> downloading -> completed',
+      () async {
+        final manager = DownloadManager(
+          storage: storage,
+          service: downloadService,
+          repository: downloadRepo,
+          preferencesRepo: prefsRepo,
+        );
 
-      final stateList = <TrackDownloadState>[];
-      final sub = manager.watchTrackDownloadState(downloadableSong1.id).listen(stateList.add);
+        final stateList = <TrackDownloadState>[];
+        final sub = manager
+            .watchTrackDownloadState(downloadableSong1.id)
+            .listen(stateList.add);
 
-      await manager.downloadTrack(downloadableSong1);
-      await manager.waitUntilComplete(downloadableSong1.id);
+        await manager.downloadTrack(downloadableSong1);
+        await manager.waitUntilComplete(downloadableSong1.id);
 
-      final finalState = manager.getTrackDownloadState(downloadableSong1.id);
-      expect(finalState.status, equals(DownloadStatus.completed));
-      expect(finalState.progress, equals(1.0));
-      expect(finalState.localPath, isNotNull);
+        final finalState = manager.getTrackDownloadState(downloadableSong1.id);
+        expect(finalState.status, equals(DownloadStatus.completed));
+        expect(finalState.progress, equals(1.0));
+        expect(finalState.localPath, isNotNull);
 
-      final file = File(finalState.localPath!);
-      expect(await file.exists(), isTrue);
-      expect(await file.length(), greaterThan(0));
+        final file = File(finalState.localPath!);
+        expect(await file.exists(), isTrue);
+        expect(await file.length(), greaterThan(0));
 
-      // Check Drift persistence
-      final meta = await downloadRepo.getMetadata(downloadableSong1.id);
-      expect(meta, isNotNull);
-      expect(meta!.status, equals(DownloadStatus.completed));
-      expect(meta.localPath, equals(finalState.localPath));
+        // Check Drift persistence
+        final meta = await downloadRepo.getMetadata(downloadableSong1.id);
+        expect(meta, isNotNull);
+        expect(meta!.status, equals(DownloadStatus.completed));
+        expect(meta.localPath, equals(finalState.localPath));
 
-      await sub.cancel();
-      manager.dispose();
-    });
+        await sub.cancel();
+        manager.dispose();
+      },
+    );
 
-    test('Cancels active download, cleans .part file, and records cancelled state', () async {
-      final slowService = FakeDownloadService(chunkDelay: const Duration(milliseconds: 100));
-      final manager = DownloadManager(
-        storage: storage,
-        service: slowService,
-        repository: downloadRepo,
-        preferencesRepo: prefsRepo,
-      );
+    test(
+      'Cancels active download, cleans .part file, and records cancelled state',
+      () async {
+        final slowService = FakeDownloadService(
+          chunkDelay: const Duration(milliseconds: 100),
+        );
+        final manager = DownloadManager(
+          storage: storage,
+          service: slowService,
+          repository: downloadRepo,
+          preferencesRepo: prefsRepo,
+        );
 
-      await manager.downloadTrack(downloadableSong1);
-      // Let download start
-      await Future<void>.delayed(const Duration(milliseconds: 30));
+        await manager.downloadTrack(downloadableSong1);
+        // Let download start
+        await Future<void>.delayed(const Duration(milliseconds: 30));
 
-      await manager.cancelDownload(downloadableSong1.id);
-      // Allow background streaming loop to abort and delete temp file
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+        await manager.cancelDownload(downloadableSong1.id);
+        // Allow background streaming loop to abort and delete temp file
+        await Future<void>.delayed(const Duration(milliseconds: 150));
 
-      final state = manager.getTrackDownloadState(downloadableSong1.id);
-      expect(state.isCompleted, isFalse);
+        final state = manager.getTrackDownloadState(downloadableSong1.id);
+        expect(state.isCompleted, isFalse);
 
-      final tempFile = await storage.getTempAudioFile(downloadableSong1);
-      expect(await tempFile.exists(), isFalse);
+        final tempFile = await storage.getTempAudioFile(downloadableSong1);
+        expect(await tempFile.exists(), isFalse);
 
-      final finalFile = await storage.getFinalAudioFile(downloadableSong1);
-      expect(await finalFile.exists(), isFalse);
+        final finalFile = await storage.getFinalAudioFile(downloadableSong1);
+        expect(await finalFile.exists(), isFalse);
 
-      manager.dispose();
-    });
+        manager.dispose();
+      },
+    );
 
-    test('Removes completed download, deletes audio from disk, and removes DB row', () async {
-      final manager = DownloadManager(
-        storage: storage,
-        service: downloadService,
-        repository: downloadRepo,
-        preferencesRepo: prefsRepo,
-      );
+    test(
+      'Removes completed download, deletes audio from disk, and removes DB row',
+      () async {
+        final manager = DownloadManager(
+          storage: storage,
+          service: downloadService,
+          repository: downloadRepo,
+          preferencesRepo: prefsRepo,
+        );
 
-      await manager.downloadTrack(downloadableSong1);
-      await manager.waitUntilComplete(downloadableSong1.id);
+        await manager.downloadTrack(downloadableSong1);
+        await manager.waitUntilComplete(downloadableSong1.id);
 
-      var state = manager.getTrackDownloadState(downloadableSong1.id);
-      expect(state.isCompleted, isTrue);
+        var state = manager.getTrackDownloadState(downloadableSong1.id);
+        expect(state.isCompleted, isTrue);
 
-      await manager.removeDownload(downloadableSong1);
+        await manager.removeDownload(downloadableSong1);
 
-      state = manager.getTrackDownloadState(downloadableSong1.id);
-      expect(state.isCompleted, isFalse);
+        state = manager.getTrackDownloadState(downloadableSong1.id);
+        expect(state.isCompleted, isFalse);
 
-      final finalFile = await storage.getFinalAudioFile(downloadableSong1);
-      expect(await finalFile.exists(), isFalse);
+        final finalFile = await storage.getFinalAudioFile(downloadableSong1);
+        expect(await finalFile.exists(), isFalse);
 
-      final meta = await downloadRepo.getMetadata(downloadableSong1.id);
-      expect(meta, isNull);
+        final meta = await downloadRepo.getMetadata(downloadableSong1.id);
+        expect(meta, isNull);
 
-      manager.dispose();
-    });
+        manager.dispose();
+      },
+    );
 
     test('Retry resumes download after a failure', () async {
       final failingService = FakeDownloadService(
         shouldFail: true,
-        failureException: const NetworkUnavailableException('Simulated network drop'),
+        failureException: const NetworkUnavailableException(
+          'Simulated network drop',
+        ),
       );
       final manager = DownloadManager(
         storage: storage,
@@ -304,16 +325,34 @@ void main() {
       await manager.downloadTrack(downloadableSong3);
 
       // Immediately: track 1 & 2 are downloading, track 3 is pending
-      expect(manager.getTrackDownloadState(downloadableSong1.id).status, equals(DownloadStatus.downloading));
-      expect(manager.getTrackDownloadState(downloadableSong2.id).status, equals(DownloadStatus.downloading));
-      expect(manager.getTrackDownloadState(downloadableSong3.id).status, equals(DownloadStatus.pending));
+      expect(
+        manager.getTrackDownloadState(downloadableSong1.id).status,
+        equals(DownloadStatus.downloading),
+      );
+      expect(
+        manager.getTrackDownloadState(downloadableSong2.id).status,
+        equals(DownloadStatus.downloading),
+      );
+      expect(
+        manager.getTrackDownloadState(downloadableSong3.id).status,
+        equals(DownloadStatus.pending),
+      );
 
       // Wait for queue processing to complete all 3 tracks
       await Future<void>.delayed(const Duration(milliseconds: 800));
 
-      expect(manager.getTrackDownloadState(downloadableSong1.id).status, equals(DownloadStatus.completed));
-      expect(manager.getTrackDownloadState(downloadableSong2.id).status, equals(DownloadStatus.completed));
-      expect(manager.getTrackDownloadState(downloadableSong3.id).status, equals(DownloadStatus.completed));
+      expect(
+        manager.getTrackDownloadState(downloadableSong1.id).status,
+        equals(DownloadStatus.completed),
+      );
+      expect(
+        manager.getTrackDownloadState(downloadableSong2.id).status,
+        equals(DownloadStatus.completed),
+      );
+      expect(
+        manager.getTrackDownloadState(downloadableSong3.id).status,
+        equals(DownloadStatus.completed),
+      );
 
       manager.dispose();
     });
@@ -416,11 +455,17 @@ void main() {
       manager.dispose();
     });
 
-    test('Priority 2: Resolves to RemoteUrlSource when online and not downloaded', () async {
-      final source = await resolver.resolve(downloadableSong2);
-      expect(source, isA<RemoteUrlSource>());
-      expect((source as RemoteUrlSource).url, equals(downloadableSong2.streamUrl));
-    });
+    test(
+      'Priority 2: Resolves to RemoteUrlSource when online and not downloaded',
+      () async {
+        final source = await resolver.resolve(downloadableSong2);
+        expect(source, isA<RemoteUrlSource>());
+        expect(
+          (source as RemoteUrlSource).url,
+          equals(downloadableSong2.streamUrl),
+        );
+      },
+    );
 
     test('Offline mode: Resolves to UnavailableSource when track is not downloaded', () async {
       // Set offline-only mode in preferences
@@ -428,16 +473,25 @@ void main() {
 
       final source = await resolver.resolve(downloadableSong2);
       expect(source, isA<UnavailableSource>());
-      expect((source as UnavailableSource).reason, contains('Offline-only mode is active'));
+      expect(
+        (source as UnavailableSource).reason,
+        contains('Offline-only mode is active'),
+      );
     });
 
-    test('Disconnected network: Resolves to UnavailableSource when not downloaded', () async {
-      resolver.isNetworkOnline = () => false;
+    test(
+      'Disconnected network: Resolves to UnavailableSource when not downloaded',
+      () async {
+        resolver.isNetworkOnline = () => false;
 
-      final source = await resolver.resolve(downloadableSong2);
-      expect(source, isA<UnavailableSource>());
-      expect((source as UnavailableSource).reason, contains('No internet connection'));
-    });
+        final source = await resolver.resolve(downloadableSong2);
+        expect(source, isA<UnavailableSource>());
+        expect(
+          (source as UnavailableSource).reason,
+          contains('No internet connection'),
+        );
+      },
+    );
 
     test('Fallback: Falls back to RemoteUrlSource if local file is missing on disk', () async {
       // Record completed in DB but don't create file
@@ -503,7 +557,9 @@ void main() {
   });
 
   group('Phase 8: UI Widget Tests (FullPlayer & ProfileScreen)', () {
-    testWidgets('FullPlayer download button shows correct states', (tester) async {
+    testWidgets('FullPlayer download button shows correct states', (
+      tester,
+    ) async {
       final fakePlayer = FakeAudioPlayerService();
       final manager = DownloadManager(
         storage: storage,
@@ -560,15 +616,24 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('ProfileScreen shows Clear All Downloads and storage usage', (tester) async {
+    testWidgets('ProfileScreen shows Clear All Downloads and storage usage', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             appDatabaseProvider.overrideWithValue(db),
-            authStateProvider.overrideWith((ref) => AuthNotifier(
-                  AuthRepository(api: _FakeAuthApi(), storage: InMemoryAuthSessionStorage()),
-                )),
-            downloadStorageSizeProvider.overrideWith((ref) => Future.value(1024 * 1024 * 5)), // 5.0 MB
+            authStateProvider.overrideWith(
+              (ref) => AuthNotifier(
+                AuthRepository(
+                  api: _FakeAuthApi(),
+                  storage: InMemoryAuthSessionStorage(),
+                ),
+              ),
+            ),
+            downloadStorageSizeProvider.overrideWith(
+              (ref) => Future.value(1024 * 1024 * 5),
+            ), // 5.0 MB
           ],
           child: const MaterialApp(home: ProfileScreen()),
         ),
@@ -584,12 +649,16 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('LibraryScreen integrates downloadedSongsProvider', (tester) async {
+    testWidgets('LibraryScreen integrates downloadedSongsProvider', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             appDatabaseProvider.overrideWithValue(db),
-            downloadedSongsProvider.overrideWith((ref) => Future.value([downloadableSong1])),
+            downloadedSongsProvider.overrideWith(
+              (ref) => Future.value([downloadableSong1]),
+            ),
           ],
           child: const MaterialApp(home: LibraryScreen()),
         ),

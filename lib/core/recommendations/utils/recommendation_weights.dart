@@ -164,8 +164,10 @@ class RecommendationWeights {
       searchClickWeight: searchClickWeight ?? this.searchClickWeight,
       downloadWeight: downloadWeight ?? this.downloadWeight,
       earlySkipThreshold: earlySkipThreshold ?? this.earlySkipThreshold,
-      partialListenThreshold: partialListenThreshold ?? this.partialListenThreshold,
-      strongListenThreshold: strongListenThreshold ?? this.strongListenThreshold,
+      partialListenThreshold:
+          partialListenThreshold ?? this.partialListenThreshold,
+      strongListenThreshold:
+          strongListenThreshold ?? this.strongListenThreshold,
       completedThreshold: completedThreshold ?? this.completedThreshold,
       sameGenreWeight: sameGenreWeight ?? this.sameGenreWeight,
       sameMoodWeight: sameMoodWeight ?? this.sameMoodWeight,

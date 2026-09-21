@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+
 import '../../features/downloads/domain/download_metadata_repository.dart';
 import '../../features/profile/data/user_preferences_repository.dart';
 import '../../shared/models/song.dart';
@@ -40,7 +42,8 @@ class DownloadManager {
     DownloadPermissionEvaluator? permissionEvaluator,
     this.maxConcurrentDownloads = 2,
     this.isWifiConnection,
-  }) : _permissionEvaluator = permissionEvaluator ?? const DownloadPermissionEvaluator();
+  }) : _permissionEvaluator =
+           permissionEvaluator ?? const DownloadPermissionEvaluator();
 
   /// Initializes download manager, cleans stale temp files, and reconciles storage on startup.
   Future<void> initialize() async {
@@ -56,7 +59,8 @@ class DownloadManager {
         final meta = await repository.getMetadata(song.id);
         if (meta != null && meta.status == DownloadStatus.completed) {
           final localPath = meta.localPath;
-          if (localPath == null || !await storage.validateExistingFile(localPath)) {
+          if (localPath == null ||
+              !await storage.validateExistingFile(localPath)) {
             // File is missing or invalid on disk: mark failed
             await repository.recordFailed(
               songId: song.id,
@@ -67,7 +71,8 @@ class DownloadManager {
               TrackDownloadState(
                 songId: song.id,
                 status: DownloadStatus.failed,
-                errorMessage: 'Downloaded file is missing or unreadable on disk.',
+                errorMessage:
+                    'Downloaded file is missing or unreadable on disk.',
               ),
             );
           } else {
@@ -98,7 +103,8 @@ class DownloadManager {
     final permission = _permissionEvaluator.evaluate(song);
     if (!permission.isAuthorized) {
       final reason = (permission is NotAuthorizedDownloadPermission)
-          ? (permission.reason ?? "Offline download isn't available for this track.")
+          ? (permission.reason ??
+                "Offline download isn't available for this track.")
           : 'Download service unavailable.';
 
       final errState = TrackDownloadState(
@@ -120,7 +126,8 @@ class DownloadManager {
 
     // Check if already completed and valid
     final existingMeta = await repository.getMetadata(song.id);
-    if (existingMeta != null && existingMeta.status == DownloadStatus.completed) {
+    if (existingMeta != null &&
+        existingMeta.status == DownloadStatus.completed) {
       if (existingMeta.localPath != null &&
           await storage.validateExistingFile(existingMeta.localPath!)) {
         // Already downloaded and valid
@@ -299,7 +306,8 @@ class DownloadManager {
     _isProcessingQueue = true;
 
     try {
-      while (_activeTasks.length < maxConcurrentDownloads && _pendingQueue.isNotEmpty) {
+      while (_activeTasks.length < maxConcurrentDownloads &&
+          _pendingQueue.isNotEmpty) {
         final task = _pendingQueue.removeAt(0);
         _startTask(task);
       }
@@ -332,7 +340,9 @@ class DownloadManager {
           destinationFile: tempFile,
           cancelToken: task.cancelToken,
           onProgress: (received, total) {
-            final progress = total > 0 ? (received / total).clamp(0.0, 1.0) : 0.0;
+            final progress = total > 0
+                ? (received / total).clamp(0.0, 1.0)
+                : 0.0;
             final progressState = TrackDownloadState(
               songId: song.id,
               status: DownloadStatus.downloading,
@@ -387,7 +397,10 @@ class DownloadManager {
           } catch (_) {}
           final errorMsg = e.toString();
           try {
-            await repository.recordFailed(songId: song.id, errorMessage: errorMsg);
+            await repository.recordFailed(
+              songId: song.id,
+              errorMessage: errorMsg,
+            );
           } catch (_) {}
 
           final failedState = TrackDownloadState(

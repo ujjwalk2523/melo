@@ -81,10 +81,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
     await (_db.update(
       _db.playlistsTable,
     )..where((tbl) => tbl.id.equals(id))).write(
-      PlaylistsTableCompanion(
-        name: Value(validName),
-        updatedAt: Value(now),
-      ),
+      PlaylistsTableCompanion(name: Value(validName), updatedAt: Value(now)),
     );
 
     await _syncEngine?.enqueueOperation(

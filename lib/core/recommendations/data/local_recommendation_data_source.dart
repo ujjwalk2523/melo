@@ -12,43 +12,54 @@ class LocalRecommendationDataSource implements RecommendationDataSource {
   final AppDatabase db;
   final UserPreferencesRepository? preferencesRepo;
 
-  LocalRecommendationDataSource({
-    required this.db,
-    this.preferencesRepo,
-  });
+  LocalRecommendationDataSource({required this.db, this.preferencesRepo});
 
   @override
   Future<List<Song>> getFavorites() async {
     final query = db.select(db.favoritesTable).join([
-      innerJoin(db.songsTable, db.songsTable.id.equalsExp(db.favoritesTable.songId)),
+      innerJoin(
+        db.songsTable,
+        db.songsTable.id.equalsExp(db.favoritesTable.songId),
+      ),
     ])..orderBy([OrderingTerm.desc(db.favoritesTable.createdAt)]);
 
     final rows = await query.get();
-    return rows.map((row) => _mapRowToSong(row.readTable(db.songsTable))).toList();
+    return rows
+        .map((row) => _mapRowToSong(row.readTable(db.songsTable)))
+        .toList();
   }
 
   @override
   Future<List<Song>> getListeningHistory() async {
     final query = db.select(db.listeningHistoryTable).join([
-      innerJoin(db.songsTable, db.songsTable.id.equalsExp(db.listeningHistoryTable.songId)),
+      innerJoin(
+        db.songsTable,
+        db.songsTable.id.equalsExp(db.listeningHistoryTable.songId),
+      ),
     ])..orderBy([OrderingTerm.desc(db.listeningHistoryTable.playedAt)]);
 
     final rows = await query.get();
-    return rows.map((row) => _mapRowToSong(row.readTable(db.songsTable))).toList();
+    return rows
+        .map((row) => _mapRowToSong(row.readTable(db.songsTable)))
+        .toList();
   }
 
   @override
   Future<List<Playlist>> getPlaylists() async {
-    final rows = await (db.select(db.playlistsTable)
-          ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-        .get();
+    final rows = await (db.select(
+      db.playlistsTable,
+    )..orderBy([(t) => OrderingTerm.desc(t.updatedAt)])).get();
 
     final playlists = <Playlist>[];
     for (final row in rows) {
       final countQuery = db.selectOnly(db.playlistSongsTable)
         ..addColumns([db.playlistSongsTable.songId.count()])
         ..where(db.playlistSongsTable.playlistId.equals(row.id));
-      final count = await countQuery.map((r) => r.read(db.playlistSongsTable.songId.count())).getSingleOrNull() ?? 0;
+      final count =
+          await countQuery
+              .map((r) => r.read(db.playlistSongsTable.songId.count()))
+              .getSingleOrNull() ??
+          0;
 
       playlists.add(
         Playlist(
@@ -67,24 +78,35 @@ class LocalRecommendationDataSource implements RecommendationDataSource {
 
   @override
   Future<List<Song>> getPlaylistSongs(String playlistId) async {
-    final query = db.select(db.playlistSongsTable).join([
-      innerJoin(db.songsTable, db.songsTable.id.equalsExp(db.playlistSongsTable.songId)),
-    ])
-      ..where(db.playlistSongsTable.playlistId.equals(playlistId))
-      ..orderBy([OrderingTerm.asc(db.playlistSongsTable.position)]);
+    final query =
+        db.select(db.playlistSongsTable).join([
+            innerJoin(
+              db.songsTable,
+              db.songsTable.id.equalsExp(db.playlistSongsTable.songId),
+            ),
+          ])
+          ..where(db.playlistSongsTable.playlistId.equals(playlistId))
+          ..orderBy([OrderingTerm.asc(db.playlistSongsTable.position)]);
 
     final rows = await query.get();
-    return rows.map((row) => _mapRowToSong(row.readTable(db.songsTable))).toList();
+    return rows
+        .map((row) => _mapRowToSong(row.readTable(db.songsTable)))
+        .toList();
   }
 
   @override
   Future<List<Song>> getDownloadedSongs() async {
     final query = db.select(db.downloadsTable).join([
-      innerJoin(db.songsTable, db.songsTable.id.equalsExp(db.downloadsTable.songId)),
+      innerJoin(
+        db.songsTable,
+        db.songsTable.id.equalsExp(db.downloadsTable.songId),
+      ),
     ])..where(db.downloadsTable.status.equals('completed'));
 
     final rows = await query.get();
-    return rows.map((row) => _mapRowToSong(row.readTable(db.songsTable))).toList();
+    return rows
+        .map((row) => _mapRowToSong(row.readTable(db.songsTable)))
+        .toList();
   }
 
   @override
@@ -107,9 +129,9 @@ class LocalRecommendationDataSource implements RecommendationDataSource {
 
   @override
   Future<List<RecommendationFeedback>> getFeedback() async {
-    final rows = await (db.select(db.recommendationFeedbackTable)
-          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-        .get();
+    final rows = await (db.select(
+      db.recommendationFeedbackTable,
+    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
 
     return rows
         .map(
@@ -129,7 +151,9 @@ class LocalRecommendationDataSource implements RecommendationDataSource {
 
   @override
   Future<void> saveFeedback(RecommendationFeedback feedback) async {
-    await db.into(db.recommendationFeedbackTable).insert(
+    await db
+        .into(db.recommendationFeedbackTable)
+        .insert(
           RecommendationFeedbackTableCompanion.insert(
             feedbackType: feedback.feedbackType.name,
             targetId: feedback.targetId,

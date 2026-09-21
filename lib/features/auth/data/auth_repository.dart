@@ -7,11 +7,9 @@ class AuthRepository {
   final AuthApi _api;
   final IAuthSessionStorage _storage;
 
-  AuthRepository({
-    AuthApi? api,
-    IAuthSessionStorage? storage,
-  })  : _api = api ?? AuthApi(),
-        _storage = storage ?? FlutterSecureAuthSessionStorage();
+  AuthRepository({AuthApi? api, IAuthSessionStorage? storage})
+    : _api = api ?? AuthApi(),
+      _storage = storage ?? FlutterSecureAuthSessionStorage();
 
   Future<AuthState> restoreSession() async {
     try {
@@ -90,10 +88,7 @@ class AuthRepository {
         refreshToken: result.tokens.refreshToken,
       );
     } on AuthApiException catch (e) {
-      return AuthState(
-        status: AuthStatus.error,
-        errorMessage: e.message,
-      );
+      return AuthState(status: AuthStatus.error, errorMessage: e.message);
     } catch (e) {
       return AuthState(
         status: AuthStatus.error,
@@ -107,10 +102,7 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final result = await _api.login(
-        email: email,
-        password: password,
-      );
+      final result = await _api.login(email: email, password: password);
 
       await _storage.saveTokens(
         accessToken: result.tokens.accessToken,
@@ -125,10 +117,7 @@ class AuthRepository {
         refreshToken: result.tokens.refreshToken,
       );
     } on AuthApiException catch (e) {
-      return AuthState(
-        status: AuthStatus.error,
-        errorMessage: e.message,
-      );
+      return AuthState(status: AuthStatus.error, errorMessage: e.message);
     } catch (e) {
       return AuthState(
         status: AuthStatus.error,
@@ -148,8 +137,16 @@ class AuthRepository {
     return _api.forgotPassword(email);
   }
 
-  Future<AuthUser> updateProfile(String token, {String? displayName, String? avatarUrl}) async {
-    final updated = await _api.updateMe(token, displayName: displayName, avatarUrl: avatarUrl);
+  Future<AuthUser> updateProfile(
+    String token, {
+    String? displayName,
+    String? avatarUrl,
+  }) async {
+    final updated = await _api.updateMe(
+      token,
+      displayName: displayName,
+      avatarUrl: avatarUrl,
+    );
     await _storage.saveUser(updated);
     return updated;
   }

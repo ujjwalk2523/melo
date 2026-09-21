@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../shared/models/song.dart';
 import '../database/database_providers.dart';
 import 'download_manager.dart';
@@ -63,9 +65,9 @@ final downloadedSongsProvider = FutureProvider<List<Song>>((ref) async {
 /// Stream provider for the reactive download state of an individual song.
 final trackDownloadStateProvider =
     StreamProvider.family<TrackDownloadState, String>((ref, songId) {
-  final manager = ref.watch(downloadManagerProvider);
-  return manager.watchTrackDownloadState(songId);
-});
+      final manager = ref.watch(downloadManagerProvider);
+      return manager.watchTrackDownloadState(songId);
+    });
 
 /// Provider for total storage bytes consumed by downloaded audio.
 final downloadStorageSizeProvider = FutureProvider<int>((ref) async {

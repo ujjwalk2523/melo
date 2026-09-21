@@ -42,8 +42,10 @@ class UserPreferences {
       crossfadeDuration: crossfadeDuration ?? this.crossfadeDuration,
       offlineOnly: offlineOnly ?? this.offlineOnly,
       downloadOnWifiOnly: downloadOnWifiOnly ?? this.downloadOnWifiOnly,
-      personalizedRecommendations: personalizedRecommendations ?? this.personalizedRecommendations,
-      useListeningHistoryForRecs: useListeningHistoryForRecs ?? this.useListeningHistoryForRecs,
+      personalizedRecommendations:
+          personalizedRecommendations ?? this.personalizedRecommendations,
+      useListeningHistoryForRecs:
+          useListeningHistoryForRecs ?? this.useListeningHistoryForRecs,
       discoveryLevel: discoveryLevel ?? this.discoveryLevel,
     );
   }

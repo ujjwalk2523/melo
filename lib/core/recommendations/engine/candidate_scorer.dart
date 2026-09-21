@@ -73,14 +73,23 @@ class CandidateScorer {
 
       // Feature 1: User Affinity (Artist + Genre + Album)
       final artistAffinity = tasteProfile.topArtists[song.artist] ?? 0.0;
-      final genreAffinity = song.genre != null ? (tasteProfile.topGenres[song.genre!] ?? 0.0) : 0.0;
+      final genreAffinity = song.genre != null
+          ? (tasteProfile.topGenres[song.genre!] ?? 0.0)
+          : 0.0;
       final albumAffinity = tasteProfile.topAlbums[song.album] ?? 0.0;
-      final userAffinity = ((artistAffinity * 0.5) + (genreAffinity * 0.3) + (albumAffinity * 0.2)).clamp(0.0, 1.0);
+      final userAffinity =
+          ((artistAffinity * 0.5) +
+                  (genreAffinity * 0.3) +
+                  (albumAffinity * 0.2))
+              .clamp(0.0, 1.0);
 
       // Feature 2: Similarity (against anchorSong or top favorite)
       double maxSimilarity = 0.0;
       if (anchorSong != null) {
-        maxSimilarity = similarityCalculator.calculateSimilarity(song, anchorSong);
+        maxSimilarity = similarityCalculator.calculateSimilarity(
+          song,
+          anchorSong,
+        );
       } else if (favorites.isNotEmpty) {
         for (final fav in favorites.take(5)) {
           final sim = similarityCalculator.calculateSimilarity(song, fav);
@@ -111,7 +120,8 @@ class CandidateScorer {
       final downloadBonus = isDownloaded ? 0.15 : 0.0;
 
       // Combine weighted signals
-      double finalScore = (weights.userAffinityWeight * userAffinity) +
+      double finalScore =
+          (weights.userAffinityWeight * userAffinity) +
           (weights.similarityWeight * maxSimilarity) +
           (weights.popularityWeight * popularityScore) +
           (weights.discoveryWeight * discoveryScore) +

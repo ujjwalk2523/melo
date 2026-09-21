@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/recommendations/providers/recommendation_providers.dart';
 import '../../../core/sync/sync_engine.dart';
 import '../../../core/sync/sync_providers.dart';
+import '../../../core/utils/app_logger.dart';
 import '../data/auth_api.dart';
 import '../data/auth_repository.dart';
 import '../data/auth_session_storage.dart';
@@ -24,8 +27,10 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
   final SyncEngine? _syncEngine;
+  final Future<void> Function()? _onClearUserData;
 
-  AuthNotifier(this._repository, [this._syncEngine]) : super(AuthState.initial) {
+  AuthNotifier(this._repository, [this._syncEngine, this._onClearUserData])
+    : super(AuthState.initial) {
     restoreSession();
   }
 
@@ -69,7 +74,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     final token = state.accessToken;
+    AppLogger.info(
+      'User logging out. Purging session and isolating state.',
+      category: LogCategory.auth,
+    );
     await _repository.logout(token);
+    await _syncEngine?.resetSyncData();
+    if (_onClearUserData != null) {
+      try {
+        await _onClearUserData();
+      } catch (_) {}
+    }
     state = AuthState.unauthenticated;
   }
 
@@ -81,8 +96,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final token = state.accessToken;
     if (token == null) return;
     try {
-      final updated = await _repository.updateProfile(token,
-          displayName: displayName, avatarUrl: avatarUrl);
+      final updated = await _repository.updateProfile(
+        token,
+        displayName: displayName,
+        avatarUrl: avatarUrl,
+      );
       state = state.copyWith(user: updated);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
@@ -92,8 +110,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> deleteAccount() async {
     final token = state.accessToken;
     if (token == null) return false;
+    AppLogger.info(
+      'User deleting account. Purging all cached data and session tokens.',
+      category: LogCategory.auth,
+    );
     try {
       await _repository.deleteAccount(token);
+      await _syncEngine?.resetSyncData();
+      if (_onClearUserData != null) {
+        try {
+          await _onClearUserData();
+        } catch (_) {}
+      }
       state = AuthState.unauthenticated;
       return true;
     } catch (e) {
@@ -106,7 +134,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repo = ref.watch(authRepositoryProvider);
   final syncEngine = ref.watch(syncEngineProvider);
-  return AuthNotifier(repo, syncEngine);
+  return AuthNotifier(repo, syncEngine, () async {
+    try {
+      final recNotifier = ref.read(recommendationStateProvider.notifier);
+      await recNotifier.resetPersonalization();
+    } catch (_) {}
+  });
 });
 
 final currentUserProvider = Provider<AuthUser?>((ref) {

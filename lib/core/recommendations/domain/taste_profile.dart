@@ -80,7 +80,9 @@ class TasteProfile {
       topAlbums: Map<String, double>.from(json['topAlbums'] as Map? ?? {}),
       recentArtists: List<String>.from(json['recentArtists'] as List? ?? []),
       recentGenres: List<String>.from(json['recentGenres'] as List? ?? []),
-      favoriteProviders: List<String>.from(json['favoriteProviders'] as List? ?? []),
+      favoriteProviders: List<String>.from(
+        json['favoriteProviders'] as List? ?? [],
+      ),
       totalPlays: (json['totalPlays'] as num?)?.toInt() ?? 0,
       totalFavorites: (json['totalFavorites'] as num?)?.toInt() ?? 0,
       totalSkips: (json['totalSkips'] as num?)?.toInt() ?? 0,
