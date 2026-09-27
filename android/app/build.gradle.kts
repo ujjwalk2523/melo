@@ -6,9 +6,8 @@ plugins {
 
 android {
     namespace = "com.melo.app.melo"
-    compileSdk = 36
+    compileSdk = flutter.compileSdkVersion
     buildToolsVersion = "36.1.0"
-    ndkVersion = "26.1.10909125"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -28,8 +27,14 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
     }
 
+    packaging {
+        jniLibs {
+            keepDebugSymbols.add("**/*")
+        }
+    }
     buildTypes {
         release {
             // Signing with the debug keys for now, so `flutter run --release` works.
@@ -55,7 +60,7 @@ flutter {
 }
 
 tasks.whenTaskAdded {
-    if (name.contains("DuplicateClasses") || name.contains("stripDebug") || name.contains("StripDebugSymbols") || name.contains("strip") || name.contains("ExtractNativeDebugMetadata") || name.contains("extractReleaseNativeSymbolTables") || name.contains("NativeSymbolTables")) {
+    if (name.contains("DuplicateClasses") || name.contains("ExtractNativeDebugMetadata") || name.contains("extractReleaseNativeSymbolTables") || name.contains("NativeSymbolTables")) {
         enabled = false
     }
 }
