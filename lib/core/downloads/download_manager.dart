@@ -335,8 +335,12 @@ class DownloadManager {
         await repository.recordDownloadStarted(song);
         final tempFile = await storage.getTempAudioFile(song);
 
+        final targetUrl = (song.downloadUrl?.trim().isNotEmpty == true)
+            ? song.downloadUrl!.trim()
+            : (song.streamUrl?.trim() ?? '');
+
         await service.downloadFile(
-          url: song.downloadUrl!,
+          url: targetUrl,
           destinationFile: tempFile,
           cancelToken: task.cancelToken,
           onProgress: (received, total) {
