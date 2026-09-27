@@ -56,12 +56,19 @@ class DownloadPermissionEvaluator {
     }
 
     final url = song.downloadUrl?.trim();
-    if (url == null || url.isEmpty) {
-      return const DownloadPermission.notAuthorized(
-        reason: 'Provider did not supply an authorized download URL.',
-      );
+    if (url != null && url.isNotEmpty) {
+      return DownloadPermission.authorized(url: url);
     }
 
-    return DownloadPermission.authorized(url: url);
+    if (song.downloadUrl == null) {
+      final streamUrl = song.streamUrl?.trim() ?? '';
+      if (streamUrl.isNotEmpty) {
+        return DownloadPermission.authorized(url: streamUrl);
+      }
+    }
+
+    return const DownloadPermission.notAuthorized(
+      reason: 'Provider did not supply an authorized download URL.',
+    );
   }
 }
