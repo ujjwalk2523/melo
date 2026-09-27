@@ -25,13 +25,21 @@ abstract final class ApiConfig {
 
   /// Base API URL for backend services.
   ///
-  /// Defaults to `http://10.0.2.2:4000/api` for Android Emulator access to host localhost.
-  /// Override during runtime using `--dart-define=MELO_API_URL=http://localhost:4000/api`
-  /// or `--dart-define=MELO_API_URL=https://api.yourdomain.com/api`.
-  static const String baseUrl = String.fromEnvironment(
+  /// Defaults to `http://127.0.0.1:4000/api` which works directly on physical phones
+  /// via USB `adb reverse tcp:4000 tcp:4000`, on emulator with port forwarding,
+  /// and local desktop.
+  static String baseUrl = const String.fromEnvironment(
     'MELO_API_URL',
-    defaultValue: 'http://10.0.2.2:4000/api',
+    defaultValue: 'http://127.0.0.1:4000/api',
   );
+
+  /// Candidate addresses to probe for host machine backend connection
+  static const List<String> candidateBaseUrls = [
+    'http://127.0.0.1:4000/api',
+    'http://10.3.72.121:4000/api',
+    'http://10.0.2.2:4000/api',
+    'http://localhost:4000/api',
+  ];
 
   /// Default network timeout duration.
   static const Duration timeout = Duration(seconds: 8);
