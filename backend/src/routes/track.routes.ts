@@ -9,6 +9,7 @@ export function createTrackRouter(musicService: MusicService): Router {
 
   router.get('/tracks/:provider/:trackId', trackController.getTrack);
   router.get('/tracks/:provider/:trackId/stream', trackController.getStream);
+  router.get('/tracks/:provider/:trackId/stream-audio', trackController.streamAudio);
   router.get(
     '/tracks/:provider/:trackId/download-info',
     downloadInfoRateLimiter.middleware(),
