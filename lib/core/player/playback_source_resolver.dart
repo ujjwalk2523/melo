@@ -7,6 +7,8 @@ import '../database/database_providers.dart';
 import '../downloads/download_providers.dart';
 import '../downloads/download_repository.dart';
 import '../downloads/download_storage.dart';
+import '../network/api_config.dart';
+import '../network/saavn_service.dart';
 
 /// Resolved audio playback source for the Melo audio player engine.
 sealed class PlaybackSource {
@@ -44,6 +46,7 @@ class PlaybackSourceResolver {
   final DownloadRepository downloadRepo;
   final DownloadStorage downloadStorage;
   final UserPreferencesRepository? preferencesRepo;
+  final SaavnService? saavnService;
 
   /// Function to check network connectivity state.
   bool Function()? isNetworkOnline;
@@ -52,6 +55,7 @@ class PlaybackSourceResolver {
     required this.downloadRepo,
     required this.downloadStorage,
     this.preferencesRepo,
+    this.saavnService,
     this.isNetworkOnline,
   });
 
@@ -97,9 +101,38 @@ class PlaybackSourceResolver {
     }
 
     // 4. Priority 2: Authorized remote stream
-    final streamUrl = song.streamUrl?.trim();
-    if (streamUrl != null && streamUrl.isNotEmpty) {
-      return RemoteUrlSource(streamUrl, song);
+    // Check direct stream URL first if present
+    final directUrl = song.streamUrl?.trim();
+    if (directUrl != null && directUrl.isNotEmpty) {
+      return RemoteUrlSource(directUrl, song);
+    }
+
+    // Saavn tracks resolution if streamUrl was not pre-resolved
+    if (song.provider == 'saavn' || song.id.startsWith('saavn:')) {
+      if (saavnService != null) {
+        final resolvedUrl = await saavnService!.resolveStreamUrl(song.id);
+        if (resolvedUrl != null && resolvedUrl.isNotEmpty) {
+          return RemoteUrlSource(resolvedUrl, song);
+        }
+      }
+    }
+
+    if (song.provider == 'audius' ||
+        song.id.startsWith('audius:') ||
+        (song.streamUrl != null && song.streamUrl!.contains('audius'))) {
+      final cleanId = song.id.startsWith('audius:')
+          ? song.id.substring(7)
+          : song.id;
+      final proxiedUrl =
+          '${ApiConfig.baseUrl}/tracks/audius/$cleanId/stream-audio';
+      return RemoteUrlSource(proxiedUrl, song);
+    }
+
+    if (song.provider == 'melo-mock') {
+      return RemoteUrlSource(
+        'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+        song,
+      );
     }
 
     // 5. Unavailable
@@ -112,9 +145,11 @@ final playbackSourceResolverProvider = Provider<PlaybackSourceResolver>((ref) {
   final downloadRepo = ref.watch(downloadRepositoryProvider);
   final downloadStorage = ref.watch(downloadStorageProvider);
   final prefsRepo = ref.watch(userPreferencesRepositoryProvider);
+  final saavnService = ref.watch(saavnServiceProvider);
   return PlaybackSourceResolver(
     downloadRepo: downloadRepo,
     downloadStorage: downloadStorage,
     preferencesRepo: prefsRepo,
+    saavnService: saavnService,
   );
 });
