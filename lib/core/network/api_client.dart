@@ -29,18 +29,21 @@ class ApiException implements Exception {
 /// - Strictly never retries client-side 4xx errors
 class ApiClient {
   final http.Client _client;
-  final String baseUrl;
+  String baseUrl;
   final int maxRetries;
   final Duration retryBaseDelay;
+  final bool enableCandidateFallback;
 
   ApiClient({
     http.Client? client,
     String? baseUrl,
     int? maxRetries,
     this.retryBaseDelay = const Duration(milliseconds: 200),
+    bool? enableCandidateFallback,
   }) : _client = client ?? http.Client(),
        baseUrl = baseUrl ?? ApiConfig.baseUrl,
-       maxRetries = maxRetries ?? ApiConfig.maxRetries;
+       maxRetries = maxRetries ?? ApiConfig.maxRetries,
+       enableCandidateFallback = enableCandidateFallback ?? (baseUrl == null);
 
   /// Perform a GET request to the given endpoint with automatic retry on transient errors.
   Future<dynamic> get(
@@ -118,6 +121,10 @@ class ApiClient {
           errorCode: code,
         );
       } on TimeoutException {
+        // Try fallback candidate base URLs if initial connection failed
+        final fallback = await _tryFallbackCandidates(endpoint, queryParameters);
+        if (fallback != null) return fallback;
+
         if (attempt < effectiveRetries) {
           attempt++;
           final delay = retryBaseDelay * attempt;
@@ -133,6 +140,9 @@ class ApiClient {
           statusCode: 408,
         );
       } on http.ClientException catch (e) {
+        final fallback = await _tryFallbackCandidates(endpoint, queryParameters);
+        if (fallback != null) return fallback;
+
         if (attempt < effectiveRetries) {
           attempt++;
           final delay = retryBaseDelay * attempt;
@@ -148,6 +158,9 @@ class ApiClient {
           statusCode: 0,
         );
       } on SocketException catch (e) {
+        final fallback = await _tryFallbackCandidates(endpoint, queryParameters);
+        if (fallback != null) return fallback;
+
         if (attempt < effectiveRetries) {
           attempt++;
           final delay = retryBaseDelay * attempt;
@@ -167,6 +180,43 @@ class ApiClient {
         throw ApiException('Unexpected network error: $e');
       }
     }
+  }
+
+  Future<dynamic> _tryFallbackCandidates(
+    String endpoint,
+    Map<String, String>? queryParameters,
+  ) async {
+    if (!enableCandidateFallback) return null;
+
+    for (final candidate in ApiConfig.candidateBaseUrls) {
+      if (candidate == baseUrl) continue;
+      try {
+        final cleanEndpoint = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+        final baseUri = Uri.parse('$candidate$cleanEndpoint');
+        final uri = queryParameters != null && queryParameters.isNotEmpty
+            ? baseUri.replace(
+                queryParameters: {...baseUri.queryParameters, ...queryParameters},
+              )
+            : baseUri;
+
+        final response = await _client
+            .get(uri, headers: {'Accept': 'application/json'})
+            .timeout(const Duration(milliseconds: 1500));
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          baseUrl = candidate;
+          ApiConfig.baseUrl = candidate;
+          AppLogger.info(
+            'Discovered and switched to working backend at $candidate',
+            category: LogCategory.api,
+          );
+          return jsonDecode(response.body);
+        }
+      } catch (_) {
+        // Continue probing next candidate
+      }
+    }
+    return null;
   }
 
   void close() {
