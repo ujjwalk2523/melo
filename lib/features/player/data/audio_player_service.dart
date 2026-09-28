@@ -117,6 +117,10 @@ class JustAudioPlayerService implements AudioPlayerService {
     try {
       return await _player.setUrl(url);
     } catch (e) {
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('interrupted') || msg.contains('abort')) {
+        return null;
+      }
       throw Exception('Audio engine failed to load stream: $e');
     }
   }
@@ -126,6 +130,10 @@ class JustAudioPlayerService implements AudioPlayerService {
     try {
       return await _player.setFilePath(filePath);
     } catch (e) {
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('interrupted') || msg.contains('abort')) {
+        return null;
+      }
       throw Exception('Audio engine failed to load local file: $e');
     }
   }
