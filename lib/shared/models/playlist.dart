@@ -9,6 +9,7 @@ class Playlist {
   final List<Song> songs;
   final bool isCurated;
   final String creator;
+  final String? badge;
 
   const Playlist({
     required this.id,
@@ -18,6 +19,7 @@ class Playlist {
     required this.songs,
     this.isCurated = true,
     this.creator = 'Melo Editorial',
+    this.badge,
   });
 
   int get trackCount => songs.length;
