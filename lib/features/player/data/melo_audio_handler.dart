@@ -48,8 +48,9 @@ class MeloAudioHandler extends BaseAudioHandler with SeekHandler, QueueHandler {
           switch (event.type) {
             case AudioInterruptionType.duck:
             case AudioInterruptionType.pause:
-            case AudioInterruptionType.unknown:
               pause();
+              break;
+            case AudioInterruptionType.unknown:
               break;
           }
         }
