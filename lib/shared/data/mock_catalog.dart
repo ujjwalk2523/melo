@@ -51,7 +51,7 @@ abstract final class MockCatalog {
       album: 'Deep Space',
       artworkUrl: '',
       duration: Duration(minutes: 5, seconds: 10),
-      isDownloadable: false,
+      isDownloadable: true,
       provider: 'melo-mock',
       genre: 'Ambient',
     ),
@@ -84,7 +84,7 @@ abstract final class MockCatalog {
       album: 'High Current',
       artworkUrl: '',
       duration: Duration(minutes: 4, seconds: 04),
-      isDownloadable: false,
+      isDownloadable: true,
       provider: 'melo-mock',
       genre: 'Future Bass',
     ),
@@ -139,7 +139,7 @@ abstract final class MockCatalog {
       album: 'Cybernetic Mind',
       artworkUrl: '',
       duration: Duration(minutes: 4, seconds: 12),
-      isDownloadable: false,
+      isDownloadable: true,
       provider: 'melo-mock',
       genre: 'Techno',
     ),
@@ -183,7 +183,7 @@ abstract final class MockCatalog {
       album: 'Etheria',
       artworkUrl: '',
       duration: Duration(minutes: 4, seconds: 14),
-      isDownloadable: false,
+      isDownloadable: true,
       provider: 'melo-mock',
       genre: 'Chillstep',
     ),
@@ -208,6 +208,105 @@ abstract final class MockCatalog {
       isDownloadable: true,
       provider: 'melo-mock',
       genre: 'Electronic',
+    ),
+    // -------------------------------------------------------------------------
+    // Indian Catalog (Hindi, Punjabi, Bhojpuri, Haryanvi, Retro Classics)
+    // -------------------------------------------------------------------------
+    Song(
+      id: 'saavn:vj2tW1iy',
+      title: 'Brown Rang',
+      artist: 'Yo Yo Honey Singh',
+      album: 'International Villager',
+      artworkUrl:
+          'https://c.saavncdn.com/924/International-Villager-Hindi-2011-20190924062024-500x500.jpg',
+      duration: Duration(minutes: 2, seconds: 59),
+      streamUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:47_T2N3p',
+      title: 'Casa Tupka Anthemo',
+      artist: 'Yo Yo Honey Singh, Priyanshi',
+      album: 'Casa Tupka Anthemo',
+      artworkUrl:
+          'https://c.saavncdn.com/786/Casa-Tupka-Anthemo-Hindi-2026-20260917173352-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 03),
+      streamUrl:
+          'https://aac.saavncdn.com/786/2f7463095ed2bfab1274c018551b00a2_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/786/2f7463095ed2bfab1274c018551b00a2_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Bollywood',
+    ),
+    Song(
+      id: 'saavn:ShubhCheques',
+      title: 'Cheques',
+      artist: 'Shubh',
+      album: 'Still Rollin',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 03),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi',
+    ),
+    Song(
+      id: 'saavn:RoopTeraMastana',
+      title: 'Roop Tera Mastana',
+      artist: 'Kishore Kumar',
+      album: 'Aradhana',
+      artworkUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 44),
+      streamUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Retro Classics',
+    ),
+    Song(
+      id: 'saavn:LollypopLageli',
+      title: 'Lolly Pop Lageli',
+      artist: 'Pawan Singh',
+      album: 'Lolly Pop Lageli',
+      artworkUrl:
+          'https://c.saavncdn.com/391/Lolly-Pop-Lageli-Bhojpuri-2018-20180424-500x500.jpg',
+      duration: Duration(minutes: 4, seconds: 28),
+      streamUrl:
+          'https://aac.saavncdn.com/391/eccfe9538c9a7dd264be19a767f36e51_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/391/eccfe9538c9a7dd264be19a767f36e51_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Bhojpuri',
+    ),
+    Song(
+      id: 'saavn:2Numbari',
+      title: '2 Numbari',
+      artist: 'Masoom Sharma',
+      album: '2 Numbari Lofi',
+      artworkUrl:
+          'https://c.saavncdn.com/184/2-Numbari-Lofi-Haryanvi-2023-20230725173717-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 15),
+      streamUrl:
+          'https://aac.saavncdn.com/184/ddff3330d2d9167cad37617ca9480f9c_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/184/ddff3330d2d9167cad37617ca9480f9c_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Haryanvi',
     ),
   ];
 
@@ -263,10 +362,55 @@ abstract final class MockCatalog {
       monthlyListeners: 1150000,
       isFollowed: true,
     ),
+    Artist(
+      id: 'art-007',
+      name: 'Yo Yo Honey Singh',
+      genre: 'Desi Hip Hop & Bollywood Pop',
+      avatarUrl:
+          'https://c.saavncdn.com/artists/Yo_Yo_Honey_Singh_004_20260811095253_500x500.jpg',
+      monthlyListeners: 18500000,
+      isFollowed: true,
+    ),
+    Artist(
+      id: 'art-008',
+      name: 'Shubh',
+      genre: 'Punjabi Pop & Hip Hop',
+      avatarUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      monthlyListeners: 12400000,
+      isFollowed: true,
+    ),
+    Artist(
+      id: 'art-009',
+      name: 'Pawan Singh',
+      genre: 'Bhojpuri Hits & Folk',
+      avatarUrl:
+          'https://c.saavncdn.com/391/Lolly-Pop-Lageli-Bhojpuri-2018-20180424-500x500.jpg',
+      monthlyListeners: 9800000,
+      isFollowed: true,
+    ),
+    Artist(
+      id: 'art-010',
+      name: 'Masoom Sharma',
+      genre: 'Haryanvi Ragni & Pop',
+      avatarUrl:
+          'https://c.saavncdn.com/184/2-Numbari-Lofi-Haryanvi-2023-20230725173717-500x500.jpg',
+      monthlyListeners: 6500000,
+      isFollowed: true,
+    ),
+    Artist(
+      id: 'art-011',
+      name: 'Kishore Kumar',
+      genre: 'Vintage Bollywood Classics',
+      avatarUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      monthlyListeners: 15200000,
+      isFollowed: true,
+    ),
   ];
 
   // ---------------------------------------------------------------------------
-  // Fictional Albums
+  // Fictional & Real Albums
   // ---------------------------------------------------------------------------
   static const List<Album> albums = [
     Album(
@@ -305,12 +449,78 @@ abstract final class MockCatalog {
       trackCount: 9,
       genre: 'Techno',
     ),
+    Album(
+      id: 'alb-005',
+      title: 'International Villager',
+      artist: 'Yo Yo Honey Singh',
+      artworkUrl:
+          'https://c.saavncdn.com/924/International-Villager-Hindi-2011-20190924062024-500x500.jpg',
+      year: 2011,
+      trackCount: 14,
+      genre: 'Punjabi Pop',
+    ),
+    Album(
+      id: 'alb-006',
+      title: 'Still Rollin',
+      artist: 'Shubh',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      year: 2023,
+      trackCount: 7,
+      genre: 'Punjabi',
+    ),
+    Album(
+      id: 'alb-007',
+      title: 'Aradhana',
+      artist: 'Kishore Kumar',
+      artworkUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      year: 1969,
+      trackCount: 8,
+      genre: 'Retro Classics',
+    ),
   ];
 
   // ---------------------------------------------------------------------------
-  // Curated Fictional Playlists
+  // Curated Playlists
   // ---------------------------------------------------------------------------
   static List<Playlist> get playlists => [
+    Playlist(
+      id: 'pl-desi-01',
+      title: 'Desi Bollywood & Punjabi Hits',
+      description: 'The biggest Indian bangers: Honey Singh, Shubh, and modern classics.',
+      artworkUrl:
+          'https://c.saavncdn.com/924/International-Villager-Hindi-2011-20190924062024-500x500.jpg',
+      songs: [songs[18], songs[19], songs[20]],
+      creator: 'Melo India Editorial',
+    ),
+    Playlist(
+      id: 'pl-bhojpuri-01',
+      title: 'Bhojpuri Dhamaka',
+      description: 'High-energy regional dance anthems from Pawan Singh & Khesari Lal.',
+      artworkUrl:
+          'https://c.saavncdn.com/391/Lolly-Pop-Lageli-Bhojpuri-2018-20180424-500x500.jpg',
+      songs: [songs[22]],
+      creator: 'Melo Bhojpuri',
+    ),
+    Playlist(
+      id: 'pl-haryanvi-01',
+      title: 'Haryanvi Top Beats',
+      description: 'Heavy bass desi folk and Haryanvi rap bangers by Masoom Sharma.',
+      artworkUrl:
+          'https://c.saavncdn.com/184/2-Numbari-Lofi-Haryanvi-2023-20230725173717-500x500.jpg',
+      songs: [songs[23]],
+      creator: 'Melo Haryanvi',
+    ),
+    Playlist(
+      id: 'pl-retro-01',
+      title: 'Golden Era: Kishore Kumar & Retro 70s',
+      description: 'Evergreen melodies and romantic nostalgia from the golden age.',
+      artworkUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      songs: [songs[21]],
+      creator: 'Melo Vintage',
+    ),
     Playlist(
       id: 'pl-001',
       title: 'Deep Focus & Coding',
@@ -326,22 +536,6 @@ abstract final class MockCatalog {
           'High-octane synthwave and pulsating electro for late drives.',
       artworkUrl: '',
       songs: [songs[0], songs[4], songs[6], songs[8], songs[11], songs[16]],
-      creator: 'Melo Editorial',
-    ),
-    Playlist(
-      id: 'pl-003',
-      title: 'Sunday Morning Coffee',
-      description: 'Gentle acoustic warmth, soft vocals, and calming melodies.',
-      artworkUrl: '',
-      songs: [songs[2], songs[5], songs[10], songs[13]],
-      creator: 'Curated by Melo',
-    ),
-    Playlist(
-      id: 'pl-004',
-      title: 'Cosmic Ambient Soundscapes',
-      description: 'Infinite drone, spatial reverbs, and starry atmospheres.',
-      artworkUrl: '',
-      songs: [songs[3], songs[7], songs[12], songs[15]],
       creator: 'Melo Editorial',
     ),
   ];
