@@ -44,6 +44,11 @@ final freshDiscoveriesProvider = Provider<List<Song>>((ref) {
   return MockCatalog.songs.reversed.take(6).toList();
 });
 
+/// Provides Indian & Regional music tracks (Bollywood, Punjabi, Bhojpuri, Haryanvi, Retro).
+final indianHitsProvider = Provider<List<Song>>((ref) {
+  return MockCatalog.songs.where((s) => s.provider == 'saavn').toList();
+});
+
 /// Provides featured albums.
 final featuredAlbumsProvider = Provider<List<Album>>((ref) {
   return MockCatalog.albums;
