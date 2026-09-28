@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/saavn_service.dart';
 import '../../../shared/data/mock_catalog.dart';
 import '../../../shared/models/album.dart';
 import '../../../shared/models/artist.dart';
@@ -17,13 +18,21 @@ final searchProviderFilterProvider = StateProvider<String?>((ref) => null);
 
 /// Search repository instance provider.
 final searchRepositoryProvider = Provider<SearchRepository>((ref) {
-  return SearchRepository();
+  final saavnService = ref.watch(saavnServiceProvider);
+  return SearchRepository(null, saavnService);
 });
 
 /// State notifier managing recent search queries.
 class RecentSearchesNotifier extends StateNotifier<List<String>> {
   RecentSearchesNotifier()
-    : super(['Synthwave', 'Kaelen Vance', 'Lo-Fi Chill', 'Astraea']);
+    : super([
+        'Honey Singh',
+        'Shubh',
+        'Pawan Singh',
+        'Kishore Kumar',
+        'Masoom Sharma',
+        'Sidhu Moose Wala',
+      ]);
 
   void add(String query) {
     final trimmed = query.trim();
