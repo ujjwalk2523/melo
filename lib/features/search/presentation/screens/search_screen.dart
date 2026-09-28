@@ -20,6 +20,31 @@ class SearchScreen extends ConsumerWidget {
 
   static const List<Map<String, dynamic>> genreCards = [
     {
+      'name': 'Bollywood',
+      'colors': [Color(0xFFE11D48), Color(0xFF4C0519)],
+      'icon': Icons.movie_creation_rounded,
+    },
+    {
+      'name': 'Punjabi',
+      'colors': [Color(0xFFF59E0B), Color(0xFF78350F)],
+      'icon': Icons.music_note_rounded,
+    },
+    {
+      'name': 'Bhojpuri',
+      'colors': [Color(0xFFEA580C), Color(0xFF7C2D12)],
+      'icon': Icons.celebration_rounded,
+    },
+    {
+      'name': 'Haryanvi',
+      'colors': [Color(0xFF059669), Color(0xFF064E3B)],
+      'icon': Icons.speaker_group_rounded,
+    },
+    {
+      'name': 'Retro Classics',
+      'colors': [Color(0xFF9333EA), Color(0xFF3B0764)],
+      'icon': Icons.radio_rounded,
+    },
+    {
       'name': 'Synthwave',
       'colors': [Color(0xFF7C3AED), Color(0xFF1E1B4B)],
       'icon': Icons.flash_on_rounded,
