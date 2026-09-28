@@ -12,7 +12,9 @@ import 'package:melo/features/player/providers/player_provider.dart';
 import 'package:melo/shared/models/song.dart';
 import 'package:melo/shared/widgets/aura_artwork.dart';
 
+import 'package:melo/features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
 import '../widgets/queue_sheet.dart';
+import '../widgets/realtime_lyrics_sheet.dart';
 
 /// Full-screen immersive player UI for Melo (Melo Dark Aura).
 class FullPlayerScreen extends ConsumerWidget {
@@ -102,13 +104,7 @@ class FullPlayerScreen extends ConsumerWidget {
                         color: AppColors.textSecondary,
                         tooltip: 'Options',
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Song Options'),
-                              duration: Duration(seconds: 1),
-                              backgroundColor: AppColors.surfaceHighlight,
-                            ),
-                          );
+                          _showSongOptionsSheet(context, ref, song);
                         },
                       ),
                     ],
@@ -373,16 +369,58 @@ class FullPlayerScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  // Bottom Action Bar: Hi-Res Badge, Download, Queue
+                  // Spotify-Style Mini Lyrics Preview Card
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () => RealtimeLyricsSheet.show(context, song),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceElevated.withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.surfaceBorder),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.lyrics_rounded,
+                              color: AppColors.secondary,
+                              size: 18,
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Lyrics • Tap for Real-Time Karaoke',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.keyboard_arrow_up_rounded,
+                              size: 18,
+                              color: AppColors.textTertiary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Bottom Action Bar: Hi-Res Badge, Lyrics, Playlist, Download, Queue
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Audio Quality Badge
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
+                            horizontal: 8,
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
@@ -397,9 +435,9 @@ class FullPlayerScreen extends ConsumerWidget {
                                 size: 12,
                                 color: AppColors.secondary,
                               ),
-                              SizedBox(width: 6),
+                              SizedBox(width: 4),
                               Text(
-                                'Hi-Res Lossless • 24-bit',
+                                'Lossless',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
@@ -408,6 +446,32 @@ class FullPlayerScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
+                        ),
+
+                        // Real-Time Synced Lyrics button
+                        IconButton(
+                          icon: const Icon(
+                            Icons.lyrics_rounded,
+                            color: AppColors.secondary,
+                            size: 22,
+                          ),
+                          tooltip: 'Real-Time Lyrics',
+                          onPressed: () {
+                            RealtimeLyricsSheet.show(context, song);
+                          },
+                        ),
+
+                        // Add to Playlist button
+                        IconButton(
+                          icon: const Icon(
+                            Icons.playlist_add_rounded,
+                            color: AppColors.textSecondary,
+                            size: 24,
+                          ),
+                          tooltip: 'Add to Playlist',
+                          onPressed: () {
+                            AddToPlaylistSheet.show(context, song);
+                          },
                         ),
 
                         // Download button with full state support
@@ -445,6 +509,57 @@ class FullPlayerScreen extends ConsumerWidget {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  void _showSongOptionsSheet(
+    BuildContext context,
+    WidgetRef ref,
+    Song song,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceElevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.playlist_add_rounded, color: AppColors.secondary),
+                title: const Text('Add to Playlist', style: TextStyle(color: AppColors.textPrimary)),
+                subtitle: const Text('Add to an existing or new playlist', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  AddToPlaylistSheet.show(context, song);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.lyrics_rounded, color: AppColors.primary),
+                title: const Text('Real-Time Lyrics', style: TextStyle(color: AppColors.textPrimary)),
+                subtitle: const Text('View synced lyrics with auto-scroll', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  RealtimeLyricsSheet.show(context, song);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.auto_awesome_rounded, color: AppColors.tertiary),
+                title: const Text('More Like This', style: TextStyle(color: AppColors.textPrimary)),
+                subtitle: const Text('Discover similar recommendations', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _showSimilarSongsSheet(context, ref, song);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -677,7 +792,15 @@ class FullPlayerScreen extends ConsumerWidget {
           size: 22,
         ),
         tooltip: 'Download failed. Tap to retry.',
-        onPressed: () => manager.retryDownload(song),
+        onPressed: () {
+          final downloadableSong = song.copyWith(
+            isDownloadable: true,
+            downloadUrl: (song.downloadUrl != null && song.downloadUrl!.isNotEmpty)
+                ? song.downloadUrl
+                : song.streamUrl,
+          );
+          manager.retryDownload(downloadableSong);
+        },
       );
     }
 
@@ -690,8 +813,14 @@ class FullPlayerScreen extends ConsumerWidget {
       ),
       tooltip: 'Download for offline playback',
       onPressed: () {
-        manager.downloadTrack(song);
-        ref.read(playerNotifierProvider.notifier).toggleDownload(song.id, song);
+        final downloadableSong = song.copyWith(
+          isDownloadable: true,
+          downloadUrl: (song.downloadUrl != null && song.downloadUrl!.isNotEmpty)
+              ? song.downloadUrl
+              : song.streamUrl,
+        );
+        manager.downloadTrack(downloadableSong);
+        ref.read(playerNotifierProvider.notifier).toggleDownload(song.id, downloadableSong);
       },
     );
   }
