@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:melo/core/database/database_providers.dart';
 import 'package:melo/core/recommendations/domain/recommendation.dart';
+import 'package:melo/core/recommendations/providers/ai_playlist_providers.dart';
 import 'package:melo/core/recommendations/providers/recommendation_providers.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
+import 'package:melo/features/home/presentation/widgets/ai_playlists_section.dart';
 import 'package:melo/features/home/presentation/widgets/albums_section.dart';
 import 'package:melo/features/home/presentation/widgets/artists_section.dart';
 import 'package:melo/features/home/presentation/widgets/continue_listening_banner.dart';
@@ -33,8 +35,10 @@ class HomeScreen extends ConsumerWidget {
     final trending = ref.watch(trendingSongsProvider);
     final chillLoFi = ref.watch(chillLoFiProvider);
     final freshDiscoveries = ref.watch(freshDiscoveriesProvider);
+    final indianHits = ref.watch(indianHitsProvider);
     final featuredArtists = ref.watch(featuredArtistsProvider);
     final featuredAlbums = ref.watch(featuredAlbumsProvider);
+    final aiPlaylists = ref.watch(aiPlaylistsProvider);
 
     final prefs = ref.watch(userPreferencesNotifierProvider);
     final allowPersonalized = prefs.personalizedRecommendations;
@@ -98,12 +102,27 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ],
 
-              // Made For You (Personalized recommendations)
+              // Made For You: Spotify-Style AI Playlists & Daily Mixes
+              if (allowPersonalized && aiPlaylists.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: AiPlaylistsSection(
+                    playlists: aiPlaylists,
+                    title: 'Made For You • AI Mixes',
+                    subtitle:
+                        'Playlists synthesized in real-time from your searches & listening',
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppDimensions.space16),
+                ),
+              ],
+
+              // Made For You (Personalized individual recommendations)
               if (madeForYouRecs.isNotEmpty) ...[
                 SliverToBoxAdapter(
                   child: HorizontalSection(
-                    title: 'Made For You',
-                    subtitle: 'Tailored algorithms aligned with your listening profile',
+                    title: 'Recommended Songs',
+                    subtitle: 'Tailored tracks aligned with your listening profile',
                     songs: madeForYouRecs,
                   ),
                 ),
@@ -138,6 +157,20 @@ class HomeScreen extends ConsumerWidget {
               const SliverToBoxAdapter(
                 child: SizedBox(height: AppDimensions.space16),
               ),
+
+              // Desi & Indian Hits (Bollywood, Punjabi, Bhojpuri, Haryanvi, Retro)
+              if (indianHits.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: HorizontalSection(
+                    title: 'Desi Dhamaka & Indian Hits',
+                    subtitle: 'Trending Bollywood, Punjabi, Bhojpuri, Haryanvi & Retro',
+                    songs: indianHits,
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppDimensions.space16),
+                ),
+              ],
 
               // Chill / Lo-Fi
               SliverToBoxAdapter(
