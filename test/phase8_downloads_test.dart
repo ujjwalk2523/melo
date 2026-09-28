@@ -339,7 +339,9 @@ void main() {
       );
 
       // Wait for queue processing to complete all 3 tracks
-      await Future<void>.delayed(const Duration(milliseconds: 800));
+      await manager.waitUntilComplete(downloadableSong1.id);
+      await manager.waitUntilComplete(downloadableSong2.id);
+      await manager.waitUntilComplete(downloadableSong3.id);
 
       expect(
         manager.getTrackDownloadState(downloadableSong1.id).status,
