@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimensions.dart';
 import '../../core/utils/duration_formatter.dart';
+import '../../features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
 import '../models/song.dart';
 import 'aura_artwork.dart';
 
@@ -177,13 +178,17 @@ class SongTile extends StatelessWidget {
                   side: const BorderSide(color: AppColors.surfaceBorder),
                 ),
                 onSelected: (action) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('$action: "${song.title}"'),
-                      duration: const Duration(seconds: 1),
-                      backgroundColor: AppColors.surfaceHighlight,
-                    ),
-                  );
+                  if (action == 'Add to Playlist') {
+                    AddToPlaylistSheet.show(context, song);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('$action: "${song.title}"'),
+                        duration: const Duration(seconds: 1),
+                        backgroundColor: AppColors.surfaceHighlight,
+                      ),
+                    );
+                  }
                 },
                 itemBuilder: (context) => [
                   const PopupMenuItem(
