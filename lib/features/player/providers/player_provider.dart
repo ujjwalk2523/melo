@@ -282,6 +282,12 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
         try {
           final loadedDuration = await _audioService.setUrl(url);
           if (!mounted) return;
+          // If setUrl was cancelled or superseded by another track selection
+          if (loadedDuration == null &&
+              _audioService is! FakeAudioPlayerService &&
+              state.currentSong?.id != song.id) {
+            return;
+          }
           if (loadedDuration != null && loadedDuration > Duration.zero) {
             state = state.copyWith(duration: loadedDuration);
           }
@@ -335,7 +341,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
 
   /// Pauses playback.
   Future<void> pause() async {
-    if (state.hasSong) {
+    if (state.isPlaying) {
       state = state.copyWith(status: PlayerStatus.paused);
       _syncAudioHandlerPlaybackState();
       await _audioService.pause();
@@ -345,6 +351,13 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   /// Resumes playback of the current song.
   Future<void> resume() async {
     if (state.hasSong) {
+      if ((_audioService.duration == null ||
+              _audioService.duration == Duration.zero) &&
+          _audioService is! FakeAudioPlayerService) {
+        // Cold resume: track was restored from storage without audio engine load
+        await play(state.currentSong!, queue: state.queue);
+        return;
+      }
       state = state.copyWith(status: PlayerStatus.playing);
       _syncAudioHandlerPlaybackState();
       if (state.isCompleted) {
