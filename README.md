@@ -10,12 +10,12 @@
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
 [![Android](https://img.shields.io/badge/Android-arm64--v8a-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://android.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-[![APK Size](https://img.shields.io/badge/APK%20Size-~48MB-success?style=for-the-badge&logo=googleplay&logoColor=white)](Melo-Music-Player.apk)
+[![APK Size](https://img.shields.io/badge/APK%20Size-~48MB-success?style=for-the-badge&logo=googleplay&logoColor=white)](https://github.com/ujjwalk2523/melo/releases/latest)
 [![Tests](https://img.shields.io/badge/Unit%20Tests-164%20Passing-brightgreen?style=for-the-badge&logo=checkmarx&logoColor=white)](#testing--quality-assurance)
 
 <br/>
 
-[📥 Download Release APK (48 MB)](Melo-Music-Player.apk) • [✨ Features](#-key-features) • [🏛 Architecture](#-architecture--data-flow) • [🚀 Getting Started](#-getting-started) • [📜 License](#-license--disclaimer)
+[📥 Download Release APK (48 MB)](https://github.com/ujjwalk2523/melo/releases/latest) • [✨ Features](#-key-features) • [🏛 Architecture](#-architecture--data-flow) • [🚀 Getting Started](#-getting-started) • [📜 License](#-license--disclaimer)
 
 </div>
 
@@ -292,8 +292,8 @@ flutter analyze
 ## 📦 Release & Distribution
 
 For instant sharing with friends and community:
-- The compiled release APK is ready to share at:
-  - **[Melo-Music-Player.apk](Melo-Music-Player.apk)** *(47.9 MB — easily shareable via WhatsApp, Telegram, or Google Drive)*.
+- The compiled release APK is ready to download at:
+  - **[Melo Latest Release (GitHub)](https://github.com/ujjwalk2523/melo/releases/latest)** *(Download the latest 48 MB APK directly from GitHub Releases)*.
 
 ---
 
