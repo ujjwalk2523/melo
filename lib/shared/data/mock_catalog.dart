@@ -308,10 +308,450 @@ abstract final class MockCatalog {
       provider: 'saavn',
       genre: 'Haryanvi',
     ),
+    Song(
+      id: 'saavn:DopeShope',
+      title: 'Dope Shope',
+      artist: 'Yo Yo Honey Singh, Deep Money',
+      album: 'International Villager',
+      artworkUrl:
+          'https://c.saavncdn.com/924/International-Villager-Hindi-2011-20190924062024-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 08),
+      streamUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:BlueEyes',
+      title: 'Blue Eyes',
+      artist: 'Yo Yo Honey Singh',
+      album: 'Blue Eyes',
+      artworkUrl:
+          'https://c.saavncdn.com/924/International-Villager-Hindi-2011-20190924062024-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 40),
+      streamUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Bollywood',
+    ),
+    Song(
+      id: 'saavn:AngrejiBeat',
+      title: 'Angreji Beat',
+      artist: 'Yo Yo Honey Singh, Gippy Grewal',
+      album: 'International Villager',
+      artworkUrl:
+          'https://c.saavncdn.com/924/International-Villager-Hindi-2011-20190924062024-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 30),
+      streamUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:LoveDose',
+      title: 'Love Dose',
+      artist: 'Yo Yo Honey Singh',
+      album: 'Desi Kalakaar',
+      artworkUrl:
+          'https://c.saavncdn.com/924/International-Villager-Hindi-2011-20190924062024-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 48),
+      streamUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/924/3cc1b3208e4661a2bcd85ec5f51ea2eb_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:ShubhBaller',
+      title: 'Baller',
+      artist: 'Shubh',
+      album: 'Still Rollin',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 2, seconds: 28),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:ShubhNoLove',
+      title: 'No Love',
+      artist: 'Shubh',
+      album: 'No Love',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 2, seconds: 50),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi',
+    ),
+    Song(
+      id: 'saavn:ShubhElevated',
+      title: 'Elevated',
+      artist: 'Shubh',
+      album: 'Elevated',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 20),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi',
+    ),
+    Song(
+      id: 'saavn:ShubhHer',
+      title: 'Her',
+      artist: 'Shubh',
+      album: 'Her',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 2, seconds: 35),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:Sidhu295',
+      title: '295',
+      artist: 'Sidhu Moose Wala',
+      album: 'Moosetape',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 4, seconds: 30),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi',
+    ),
+    Song(
+      id: 'saavn:SidhuSoHigh',
+      title: 'So High',
+      artist: 'Sidhu Moose Wala',
+      album: 'PBX 1',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 54),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi',
+    ),
+    Song(
+      id: 'saavn:SidhuLastRide',
+      title: 'The Last Ride',
+      artist: 'Sidhu Moose Wala',
+      album: 'No Name',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 4, seconds: 20),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi',
+    ),
+    Song(
+      id: 'saavn:DiljitLover',
+      title: 'Lover',
+      artist: 'Diljit Dosanjh',
+      album: 'MoonChild Era',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 12),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:DiljitGOAT',
+      title: 'G.O.A.T.',
+      artist: 'Diljit Dosanjh',
+      album: 'G.O.A.T.',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 44),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:KaranTaubaTauba',
+      title: 'Tauba Tauba',
+      artist: 'Karan Aujla',
+      album: 'Bad Newz',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 27),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Bollywood',
+    ),
+    Song(
+      id: 'saavn:KaranSoftly',
+      title: 'Softly',
+      artist: 'Karan Aujla',
+      album: 'Making Memories',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 2, seconds: 36),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:ArijitTumHiHo',
+      title: 'Tum Hi Ho',
+      artist: 'Arijit Singh',
+      album: 'Aashiqui 2',
+      artworkUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      duration: Duration(minutes: 4, seconds: 22),
+      streamUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Bollywood Romantic',
+    ),
+    Song(
+      id: 'saavn:ArijitKesariya',
+      title: 'Kesariya',
+      artist: 'Arijit Singh, Pritam',
+      album: 'Brahmastra',
+      artworkUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      duration: Duration(minutes: 4, seconds: 28),
+      streamUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Bollywood Romantic',
+    ),
+    Song(
+      id: 'saavn:ArijitChannaMereya',
+      title: 'Channa Mereya',
+      artist: 'Arijit Singh',
+      album: 'Ae Dil Hai Mushkil',
+      artworkUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      duration: Duration(minutes: 4, seconds: 49),
+      streamUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Bollywood Romantic',
+    ),
+    Song(
+      id: 'saavn:BadshahJugnu',
+      title: 'Jugnu',
+      artist: 'Badshah, Nikhita Gandhi',
+      album: 'Jugnu',
+      artworkUrl:
+          'https://c.saavncdn.com/786/Casa-Tupka-Anthemo-Hindi-2026-20260917173352-500x500.jpg',
+      duration: Duration(minutes: 3, seconds: 51),
+      streamUrl:
+          'https://aac.saavncdn.com/786/2f7463095ed2bfab1274c018551b00a2_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/786/2f7463095ed2bfab1274c018551b00a2_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Bollywood Pop',
+    ),
+    Song(
+      id: 'saavn:APDhillonBrownMunde',
+      title: 'Brown Munde',
+      artist: 'AP Dhillon, Gurinder Gill',
+      album: 'Not By Chance',
+      artworkUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      duration: Duration(minutes: 4, seconds: 07),
+      streamUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/704/1d43cfc150d1aef7c597c2a9bec1fa48_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Punjabi Pop',
+    ),
+    Song(
+      id: 'saavn:KishoreMereSapno',
+      title: 'Mere Sapno Ki Rani',
+      artist: 'Kishore Kumar',
+      album: 'Aradhana',
+      artworkUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      duration: Duration(minutes: 5, seconds: 00),
+      streamUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Retro Classics',
+    ),
+    Song(
+      id: 'saavn:KishoreYehShaam',
+      title: 'Yeh Shaam Mastani',
+      artist: 'Kishore Kumar',
+      album: 'Kati Patang',
+      artworkUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      duration: Duration(minutes: 4, seconds: 37),
+      streamUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      downloadUrl:
+          'https://aac.saavncdn.com/951/567184a01fadc302e3bc9b8c2db37347_sar_320.mp4',
+      isDownloadable: true,
+      provider: 'saavn',
+      genre: 'Retro Classics',
+    ),
+    Song(
+      id: 'melo-019',
+      title: 'Cyber Skyline',
+      artist: 'Kaelen Vance',
+      album: 'Neon Horizons',
+      artworkUrl: '',
+      duration: Duration(minutes: 3, seconds: 55),
+      isDownloadable: true,
+      provider: 'melo-mock',
+      genre: 'Synthwave',
+    ),
+    Song(
+      id: 'melo-020',
+      title: 'Tokyo Raindrops',
+      artist: 'Sora & The Echoes',
+      album: 'Quiet Nights',
+      artworkUrl: '',
+      duration: Duration(minutes: 2, seconds: 48),
+      isDownloadable: true,
+      provider: 'melo-mock',
+      genre: 'Lo-Fi Chill',
+    ),
+    Song(
+      id: 'melo-021',
+      title: 'Neural Network',
+      artist: 'Cipher X',
+      album: 'Cybernetic Mind',
+      artworkUrl: '',
+      duration: Duration(minutes: 4, seconds: 35),
+      isDownloadable: true,
+      provider: 'melo-mock',
+      genre: 'Techno',
+    ),
+    Song(
+      id: 'melo-022',
+      title: 'Celestial Voyage',
+      artist: 'Astraea',
+      album: 'Starlit Orbit',
+      artworkUrl: '',
+      duration: Duration(minutes: 4, seconds: 08),
+      isDownloadable: true,
+      provider: 'melo-mock',
+      genre: 'Electronic',
+    ),
+    Song(
+      id: 'melo-023',
+      title: 'Neon Surge',
+      artist: 'Voltage Crew',
+      album: 'High Current',
+      artworkUrl: '',
+      duration: Duration(minutes: 3, seconds: 42),
+      isDownloadable: true,
+      provider: 'melo-mock',
+      genre: 'Future Bass',
+    ),
+    Song(
+      id: 'melo-024',
+      title: 'Midnight Highway',
+      artist: 'Kaelen Vance',
+      album: 'Neon Horizons',
+      artworkUrl: '',
+      duration: Duration(minutes: 4, seconds: 12),
+      isDownloadable: true,
+      provider: 'melo-mock',
+      genre: 'Synthwave',
+    ),
+    Song(
+      id: 'melo-025',
+      title: 'Kyoto Tea Garden',
+      artist: 'Sora & The Echoes',
+      album: 'Quiet Nights',
+      artworkUrl: '',
+      duration: Duration(minutes: 3, seconds: 10),
+      isDownloadable: true,
+      provider: 'melo-mock',
+      genre: 'Lo-Fi Chill',
+    ),
+    Song(
+      id: 'melo-026',
+      title: 'Astral Echoes',
+      artist: 'Nebula Drift',
+      album: 'Deep Space',
+      artworkUrl: '',
+      duration: Duration(minutes: 5, seconds: 45),
+      isDownloadable: true,
+      provider: 'melo-mock',
+      genre: 'Ambient',
+    ),
   ];
 
   // ---------------------------------------------------------------------------
-  // Fictional Artists
+  // Fictional & Popular Artists
   // ---------------------------------------------------------------------------
   static const List<Artist> artists = [
     Artist(
@@ -407,12 +847,66 @@ abstract final class MockCatalog {
       monthlyListeners: 15200000,
       isFollowed: true,
     ),
+    Artist(
+      id: 'art-012',
+      name: 'Sidhu Moose Wala',
+      genre: 'Punjabi Rap & Gangsta Beats',
+      avatarUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      monthlyListeners: 16800000,
+      isFollowed: true,
+    ),
+    Artist(
+      id: 'art-013',
+      name: 'Diljit Dosanjh',
+      genre: 'Global Punjabi Pop & Bhangra',
+      avatarUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      monthlyListeners: 21500000,
+      isFollowed: true,
+    ),
+    Artist(
+      id: 'art-014',
+      name: 'Karan Aujla',
+      genre: 'Punjabi Urban Pop & Hip Hop',
+      avatarUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      monthlyListeners: 14700000,
+      isFollowed: true,
+    ),
+    Artist(
+      id: 'art-015',
+      name: 'Arijit Singh',
+      genre: 'Bollywood Soul & Romantic Ballads',
+      avatarUrl:
+          'https://c.saavncdn.com/951/Aradhana-Hindi-1969-20200831154508-500x500.jpg',
+      monthlyListeners: 38900000,
+      isFollowed: true,
+    ),
+    Artist(
+      id: 'art-016',
+      name: 'Badshah',
+      genre: 'Bollywood Commercial & Club Pop',
+      avatarUrl:
+          'https://c.saavncdn.com/786/Casa-Tupka-Anthemo-Hindi-2026-20260917173352-500x500.jpg',
+      monthlyListeners: 17200000,
+      isFollowed: true,
+    ),
+    Artist(
+      id: 'art-017',
+      name: 'AP Dhillon',
+      genre: 'Indo-Canadian Hip Hop & Trap',
+      avatarUrl:
+          'https://c.saavncdn.com/704/Still-Rollin-Punjabi-2023-20230519141012-500x500.jpg',
+      monthlyListeners: 11900000,
+      isFollowed: true,
+    ),
   ];
 
   // ---------------------------------------------------------------------------
   // Fictional & Real Albums
   // ---------------------------------------------------------------------------
-  static const List<Album> albums = [
+  static List<Album> get albums => [
     Album(
       id: 'alb-001',
       title: 'Neon Horizons',
@@ -421,6 +915,7 @@ abstract final class MockCatalog {
       year: 2026,
       trackCount: 10,
       genre: 'Synthwave',
+      songs: [songs[0], songs[7]],
     ),
     Album(
       id: 'alb-002',
@@ -430,6 +925,7 @@ abstract final class MockCatalog {
       year: 2025,
       trackCount: 8,
       genre: 'Electronic',
+      songs: [songs[1], songs[9]],
     ),
     Album(
       id: 'alb-003',
@@ -439,6 +935,7 @@ abstract final class MockCatalog {
       year: 2026,
       trackCount: 12,
       genre: 'Lo-Fi Chill',
+      songs: [songs[2], songs[10]],
     ),
     Album(
       id: 'alb-004',
@@ -448,6 +945,7 @@ abstract final class MockCatalog {
       year: 2025,
       trackCount: 9,
       genre: 'Techno',
+      songs: [songs[3], songs[11]],
     ),
     Album(
       id: 'alb-005',
@@ -458,6 +956,7 @@ abstract final class MockCatalog {
       year: 2011,
       trackCount: 14,
       genre: 'Punjabi Pop',
+      songs: [songs[19]],
     ),
     Album(
       id: 'alb-006',
@@ -468,6 +967,7 @@ abstract final class MockCatalog {
       year: 2023,
       trackCount: 7,
       genre: 'Punjabi',
+      songs: [songs[20]],
     ),
     Album(
       id: 'alb-007',
@@ -478,6 +978,7 @@ abstract final class MockCatalog {
       year: 1969,
       trackCount: 8,
       genre: 'Retro Classics',
+      songs: [songs[21]],
     ),
   ];
 
