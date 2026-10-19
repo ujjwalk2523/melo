@@ -44,6 +44,7 @@ class PlayerState {
   });
 
   bool get isPlaying => status == PlayerStatus.playing;
+  bool get isPaused => status == PlayerStatus.paused;
   bool get isLoading => status == PlayerStatus.loading;
   bool get isBuffering => status == PlayerStatus.buffering;
   bool get isCompleted => status == PlayerStatus.completed;
