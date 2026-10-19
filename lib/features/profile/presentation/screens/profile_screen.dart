@@ -12,6 +12,8 @@ import 'package:melo/core/sync/sync_state.dart';
 import 'package:melo/core/theme/app_colors.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
 import 'package:melo/features/auth/providers/auth_provider.dart';
+import 'package:melo/features/onboarding/presentation/screens/onboarding_taste_screen.dart';
+import 'package:melo/features/playlists/presentation/widgets/youtube_sync_dialog.dart';
 
 /// Primary Profile and Settings screen displaying persistent user preferences, listening stats, and audio settings.
 class ProfileScreen extends ConsumerWidget {
@@ -298,7 +300,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.space24),
+            const SizedBox(height: AppDimensions.space20),
 
             // Playback & Audio Preferences
             _buildSectionHeader('Playback & Audio Quality'),
@@ -308,6 +310,13 @@ class ProfileScreen extends ConsumerWidget {
               subtitle: prefs.audioQuality,
               onTap: () =>
                   _showAudioQualityDialog(context, ref, prefs.audioQuality),
+            ),
+            _buildSettingSwitch(
+              icon: Icons.smart_display_rounded,
+              title: 'Spotify Canvas Mode',
+              subtitle: 'Looping vertical portrait motion canvas in Full Player',
+              value: prefs.spotifyCanvasEnabled,
+              onChanged: (val) => notifier.setSpotifyCanvasEnabled(val),
             ),
             _buildSettingSwitch(
               icon: Icons.all_inclusive_rounded,
@@ -339,23 +348,25 @@ class ProfileScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
-                        children: [
-                          Icon(
-                            Icons.tune_rounded,
-                            color: AppColors.textSecondary,
-                            size: 22,
-                          ),
-                          SizedBox(width: 12),
-                          Text(
-                            'Crossfade Duration',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                      const Expanded(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.tune_rounded,
+                              color: AppColors.textSecondary,
+                              size: 22,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 12),
+                            Text(
+                              'Crossfade Duration',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       Text(
                         '${prefs.crossfadeDuration.toInt()}s',
@@ -380,6 +391,123 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.space20),
+
+            // Musical Taste & Personalization
+            _buildSectionHeader('Musical Taste & Personalization (Spotify Style)'),
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.space16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: AppDimensions.borderRadiusLg,
+                border: Border.all(color: AppColors.surfaceBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Your Music Preferences',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => OnboardingTasteScreen.show(context),
+                        icon: const Icon(Icons.tune_rounded, size: 16),
+                        label: const Text('Edit Taste'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Preferred Languages & Vibes:',
+                    style: TextStyle(fontSize: 11, color: AppColors.textTertiary, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: prefs.preferredLanguages.map((lang) {
+                      return Chip(
+                        label: Text(lang, style: const TextStyle(fontSize: 11)),
+                        backgroundColor: AppColors.surface,
+                        side: const BorderSide(color: AppColors.surfaceBorder),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Favorite Top Artists:',
+                    style: TextStyle(fontSize: 11, color: AppColors.textTertiary, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: prefs.preferredArtists.map((artist) {
+                      return Chip(
+                        label: Text(artist, style: const TextStyle(fontSize: 11)),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppDimensions.space20),
+
+            // Connected Services Card
+            _buildSectionHeader('Integrations & Connected Services'),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: AppDimensions.borderRadiusLg,
+                border: Border.all(color: AppColors.surfaceBorder),
+              ),
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF0000),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 22),
+                ),
+                title: const Text(
+                  'YouTube & YouTube Music Sync',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.textPrimary),
+                ),
+                subtitle: const Text(
+                  'Sync YouTube playlists with Hi-Res lossless streaming',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                ),
+                trailing: FilledButton.tonal(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  ),
+                  onPressed: () => YouTubeSyncDialog.show(context),
+                  child: const Text('Sync', style: TextStyle(fontSize: 12)),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppDimensions.space24),
 
             // Storage & Offline Mode
             _buildSectionHeader('Storage & Offline Mode'),
