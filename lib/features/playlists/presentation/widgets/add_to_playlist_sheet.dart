@@ -98,9 +98,11 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
             TextField(
               controller: textController,
               autofocus: true,
+              maxLength: 100,
               style: const TextStyle(color: AppColors.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Playlist Name',
+                counterText: '',
+                hintText: 'Playlist Name (max 100 characters)',
                 hintStyle: const TextStyle(color: AppColors.textTertiary),
                 filled: true,
                 fillColor: AppColors.surface,
@@ -377,7 +379,7 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                     shrinkWrap: true,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     itemCount: playlists.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 6),
+                    separatorBuilder: (context, index) => const SizedBox(height: 6),
                     itemBuilder: (context, index) {
                       final playlist = playlists[index];
                       return Material(
