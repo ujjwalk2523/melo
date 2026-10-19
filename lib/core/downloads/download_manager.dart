@@ -39,11 +39,14 @@ class DownloadManager {
     required this.service,
     required this.repository,
     this.preferencesRepo,
+    this.saavnService,
     DownloadPermissionEvaluator? permissionEvaluator,
     this.maxConcurrentDownloads = 2,
     this.isWifiConnection,
   }) : _permissionEvaluator =
            permissionEvaluator ?? const DownloadPermissionEvaluator();
+
+  final dynamic saavnService;
 
   /// Initializes download manager, cleans stale temp files, and reconciles storage on startup.
   Future<void> initialize() async {
@@ -99,8 +102,29 @@ class DownloadManager {
   Future<void> downloadTrack(Song song) async {
     if (_isDisposed) return;
 
+    var targetSong = song;
+    // For Saavn tracks, if downloadUrl is missing, attempt to use streamUrl or resolve via SaavnService
+    if ((targetSong.provider == 'saavn' || targetSong.id.startsWith('saavn:')) &&
+        (targetSong.downloadUrl == null || targetSong.downloadUrl!.trim().isEmpty)) {
+      if (targetSong.streamUrl != null && targetSong.streamUrl!.trim().isNotEmpty) {
+        targetSong = targetSong.copyWith(
+          downloadUrl: targetSong.streamUrl!.trim(),
+        );
+      } else if (saavnService != null) {
+        try {
+          final resolved = await saavnService.resolveStreamUrl(targetSong.id);
+          if (resolved != null && resolved.isNotEmpty) {
+            targetSong = targetSong.copyWith(
+              downloadUrl: resolved,
+              streamUrl: resolved,
+            );
+          }
+        } catch (_) {}
+      }
+    }
+
     // STEP 1 & 2: Verify provider authorization
-    final permission = _permissionEvaluator.evaluate(song);
+    final permission = _permissionEvaluator.evaluate(targetSong);
     if (!permission.isAuthorized) {
       final reason = (permission is NotAuthorizedDownloadPermission)
           ? (permission.reason ??
@@ -108,33 +132,33 @@ class DownloadManager {
           : 'Download service unavailable.';
 
       final errState = TrackDownloadState(
-        songId: song.id,
+        songId: targetSong.id,
         status: DownloadStatus.failed,
         errorMessage: reason,
       );
-      _updateState(song.id, errState);
-      throw DownloadNotAuthorizedException(reason, songId: song.id);
+      _updateState(targetSong.id, errState);
+      throw DownloadNotAuthorizedException(reason, songId: targetSong.id);
     }
 
     // Check duplicate active or queued
-    if (_activeTasks.containsKey(song.id)) {
+    if (_activeTasks.containsKey(targetSong.id)) {
       return;
     }
-    if (_pendingQueue.any((t) => t.songId == song.id)) {
+    if (_pendingQueue.any((t) => t.songId == targetSong.id)) {
       return;
     }
 
     // Check if already completed and valid
-    final existingMeta = await repository.getMetadata(song.id);
+    final existingMeta = await repository.getMetadata(targetSong.id);
     if (existingMeta != null &&
         existingMeta.status == DownloadStatus.completed) {
       if (existingMeta.localPath != null &&
           await storage.validateExistingFile(existingMeta.localPath!)) {
         // Already downloaded and valid
         _updateState(
-          song.id,
+          targetSong.id,
           TrackDownloadState(
-            songId: song.id,
+            songId: targetSong.id,
             status: DownloadStatus.completed,
             progress: 1.0,
             bytesDownloaded: existingMeta.downloadedBytes,
@@ -151,25 +175,25 @@ class DownloadManager {
     if (prefs?.downloadOnWifiOnly == true && isWifiConnection != null) {
       if (!isWifiConnection!()) {
         final pendingState = TrackDownloadState(
-          songId: song.id,
+          songId: targetSong.id,
           status: DownloadStatus.pending,
           errorMessage: 'Waiting for Wi-Fi connection...',
         );
-        _updateState(song.id, pendingState);
-        final task = DownloadTask(song: song, initialState: pendingState);
+        _updateState(targetSong.id, pendingState);
+        final task = DownloadTask(song: targetSong, initialState: pendingState);
         _pendingQueue.add(task);
         return;
       }
     }
 
     final pendingState = TrackDownloadState(
-      songId: song.id,
+      songId: targetSong.id,
       status: DownloadStatus.pending,
       progress: 0.0,
     );
-    _updateState(song.id, pendingState);
+    _updateState(targetSong.id, pendingState);
 
-    final task = DownloadTask(song: song, initialState: pendingState);
+    final task = DownloadTask(song: targetSong, initialState: pendingState);
     _pendingQueue.add(task);
 
     _processNextInQueue();
