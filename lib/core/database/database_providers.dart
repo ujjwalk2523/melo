@@ -168,11 +168,36 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     _enqueueSync();
   }
 
+  Future<void> setPreferredLanguages(List<String> languages) async {
+    state = state.copyWith(preferredLanguages: languages);
+    await _repo?.setPreferredLanguages(languages);
+    _enqueueSync();
+  }
+
+  Future<void> setPreferredArtists(List<String> artists) async {
+    state = state.copyWith(preferredArtists: artists);
+    await _repo?.setPreferredArtists(artists);
+    _enqueueSync();
+  }
+
+  Future<void> setHasCompletedOnboarding(bool completed) async {
+    state = state.copyWith(hasCompletedOnboarding: completed);
+    await _repo?.setHasCompletedOnboarding(completed);
+    _enqueueSync();
+  }
+
+  Future<void> setSpotifyCanvasEnabled(bool enabled) async {
+    state = state.copyWith(spotifyCanvasEnabled: enabled);
+    await _repo?.setSpotifyCanvasEnabled(enabled);
+    _enqueueSync();
+  }
+
   Future<void> resetPersonalizationPreferences() async {
     state = state.copyWith(
       personalizedRecommendations: true,
       useListeningHistoryForRecs: true,
       discoveryLevel: 'balanced',
+      hasCompletedOnboarding: false,
     );
     await _repo?.resetPersonalizationPreferences();
     _enqueueSync();
@@ -219,3 +244,11 @@ final downloadedSongIdsStreamProvider = StreamProvider<Set<String>>((ref) {
   final repo = ref.watch(downloadMetadataRepositoryProvider);
   return repo.watchDownloadedSongIds();
 });
+
+/// Reactive stream of songs in a specific user playlist.
+final playlistSongsStreamProvider =
+    StreamProvider.family<List<Song>, String>((ref, playlistId) {
+  final repo = ref.watch(playlistRepositoryProvider);
+  return repo.watchPlaylistSongs(playlistId);
+});
+
