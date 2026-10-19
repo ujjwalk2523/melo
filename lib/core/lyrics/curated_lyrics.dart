@@ -127,6 +127,47 @@ class CuratedLyrics {
 [00:29.80] Teri solid body re
 [00:34.20] Bass wajje gaadi mein bhari re!
 ''',
+
+    // Shubh - Cheques
+    'cheques': '''
+[00:00.00] Dil da ni maada, tera Shubh!
+[00:04.50] Yeah, Still Rollin album flow
+[00:08.20] Kahndi hundi si chann tak raah bana de
+[00:12.80] Taare ne pasand mainu hethaan saare laa de
+[00:17.50] Ohna taareyan de vich jad mainu vekhegi
+[00:22.10] Kujh taan aakhengi jad yaad meri aayegi
+[00:26.80] Bhaavein lakh vaari keh le
+[00:29.20] Dil vich thaan meri rehni
+[00:31.50] Aape aa ke milengi tu
+[00:34.00] Akhiyan ch hanju bhar ke
+[00:36.50] Sign hunde cheques jadon naam mera chalda
+[00:41.20] Yaaran da swag dekh har koyi jalda!
+[00:46.00] Still Rollin Shubh on the top!
+''',
+
+    // Kishore Kumar - Roop Tera Mastana
+    'roop tera mastana': '''
+[00:00.00] [Aradhana • Kishore Kumar Evergreen Classics]
+[00:09.50] Roop tera mastana pyaar mera deewana
+[00:19.20] Roop tera mastana pyaar mera deewana
+[00:28.80] Bhool koyi humse na ho jaaye
+[00:38.50] Roop tera mastana pyaar mera deewana
+[00:48.00] Raat nasheeli jawaan mast sama hai
+[00:57.20] Aaj nashe mein sara jahaan hai
+[01:06.50] Hai sharabi yeh hawa, hai sharabi yeh fiza
+[01:16.00] Roop tera mastana pyaar mera deewana
+''',
+
+    // Masoom Sharma - 2 Numbari
+    '2 numbari': '''
+[00:00.00] Haryanvi Mashup • Masoom Sharma
+[00:07.50] 2 Numbari dhanda na re yaar da
+[00:13.20] Rob dekh jatt da zamana saara darrda
+[00:19.50] Kaali gaadi kaala shisha ghumme shaan te
+[00:25.80] Yaaran di badmashi poore haryana te
+[00:32.00] Masoom Sharma heavy bass flow
+[00:38.50] Gaadi vich wajje beat full and slow!
+''',
   };
 
   /// Attempts to find curated synced lyrics for a title or artist in the local catalog.
@@ -135,7 +176,7 @@ class CuratedLyrics {
     final lowerArtist = artist.toLowerCase();
 
     for (final entry in _catalog.entries) {
-      if (lowerTitle.contains(entry.key) || entry.key.contains(lowerTitle)) {
+      if (lowerTitle.contains(entry.key) || entry.key.contains(lowerTitle) || lowerArtist.contains(entry.key)) {
         final lrc = entry.value.trim();
         final lines = LyricsParser.parseLrc(lrc);
         if (lines.isNotEmpty) {
