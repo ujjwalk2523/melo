@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../onboarding/presentation/screens/onboarding_taste_screen.dart';
+import '../../../core/database/database_providers.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
@@ -39,10 +41,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .login(email: email, password: password);
 
     if (mounted && success) {
-      if (context.canPop()) {
-        context.pop();
-      } else {
-        context.go(AppRoutes.profile);
+      final prefs = ref.read(userPreferencesNotifierProvider);
+      if (!prefs.hasCompletedOnboarding) {
+        await OnboardingTasteScreen.show(context);
+      }
+      if (mounted) {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go(AppRoutes.profile);
+        }
       }
     }
   }
