@@ -164,12 +164,23 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     _stateSubscription = _audioService.playerStateStream.listen((engineState) {
       if (!mounted) return;
 
+      // If audio engine is actively playing, immediately reflect playing status
+      if (engineState.isPlaying && state.status != PlayerStatus.playing) {
+        state = state.copyWith(status: PlayerStatus.playing);
+        _syncAudioHandlerPlaybackState();
+        return;
+      }
+
       switch (engineState.processingStatus) {
         case AudioProcessingStatus.loading:
-          state = state.copyWith(status: PlayerStatus.loading);
+          if (!engineState.isPlaying) {
+            state = state.copyWith(status: PlayerStatus.loading);
+          }
           break;
         case AudioProcessingStatus.buffering:
-          state = state.copyWith(status: PlayerStatus.buffering);
+          if (!engineState.isPlaying) {
+            state = state.copyWith(status: PlayerStatus.buffering);
+          }
           break;
         case AudioProcessingStatus.completed:
           _onTrackCompleted();
@@ -180,7 +191,6 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
               ? PlayerStatus.playing
               : (state.hasSong ? PlayerStatus.paused : PlayerStatus.initial);
           if (state.status != newStatus &&
-              state.status != PlayerStatus.loading &&
               state.status != PlayerStatus.error) {
             state = state.copyWith(status: newStatus);
           }
@@ -192,6 +202,19 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
 
   /// Plays a given song and sets the playback queue using resolved audio source.
   Future<void> play(Song song, {List<Song>? queue}) async {
+    // If same song is already active, resume if paused or keep playing
+    if (state.currentSong?.id == song.id) {
+      if (state.isPlaying) return;
+      if (state.isPaused &&
+          _audioService.duration != null &&
+          _audioService.duration != Duration.zero) {
+        state = state.copyWith(status: PlayerStatus.playing);
+        _syncAudioHandlerPlaybackState();
+        await _audioService.play();
+        return;
+      }
+    }
+
     final activeQueue = queue ?? state.queue;
     final updatedQueue = activeQueue.contains(song)
         ? activeQueue
@@ -214,7 +237,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       _syncAudioHandlerPlaybackState();
       _historyRepo?.recordPlayed(song);
       _scheduleSnapshotSave();
-      unawaited(_audioService.play());
+      await _audioService.play();
       return;
     }
 
