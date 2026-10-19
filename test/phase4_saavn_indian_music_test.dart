@@ -6,7 +6,6 @@ import 'package:melo/core/downloads/download_storage.dart';
 import 'package:melo/features/downloads/domain/download_metadata_repository.dart';
 import 'package:melo/features/search/data/search_repository.dart';
 import 'package:melo/shared/data/mock_catalog.dart';
-import 'package:melo/shared/models/song.dart';
 
 class _FakeDownloadRepo implements DownloadRepository {
   @override
