@@ -153,8 +153,7 @@ class MiniPlayer extends ConsumerWidget {
                         ),
                         child: IconButton(
                           padding: EdgeInsets.zero,
-                          icon:
-                              (playerState.isLoading || playerState.isBuffering)
+                          icon: (playerState.isLoading && !isPlaying)
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
