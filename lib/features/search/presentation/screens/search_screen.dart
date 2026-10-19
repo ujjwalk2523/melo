@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:melo/core/theme/app_colors.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
+import 'package:melo/core/utils/fuzzy_search_engine.dart';
 import 'package:melo/features/player/providers/player_provider.dart';
 import 'package:melo/features/search/presentation/widgets/search_bar_widget.dart';
 import 'package:melo/features/search/providers/search_provider.dart';
@@ -105,6 +106,12 @@ class SearchScreen extends ConsumerWidget {
         artistResults.isNotEmpty ||
         albumResults.isNotEmpty;
 
+    final liveSearchPayload = ref.watch(liveSearchProvider).valueOrNull;
+    final suggestedQuery = liveSearchPayload?.suggestedQuery ??
+        (query.isNotEmpty ? FuzzySearchEngine.suggestCorrection(query) : null);
+    final hasTypoCorrection = suggestedQuery != null &&
+        suggestedQuery.toLowerCase().trim() != query.toLowerCase().trim();
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -190,6 +197,81 @@ class SearchScreen extends ConsumerWidget {
               )
             else
               const SizedBox(height: AppDimensions.space4),
+
+            // Typo-Tolerant AI Correction Banner
+            if (hasTypoCorrection && query.isNotEmpty)
+              Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.space16,
+                  vertical: AppDimensions.space4,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.space12,
+                  vertical: AppDimensions.space8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceElevated,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome_rounded,
+                      color: AppColors.primary,
+                      size: 18,
+                    ),
+                    const SizedBox(width: AppDimensions.space8),
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Showing smart results for ',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: suggestedQuery,
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        ref.read(searchQueryProvider.notifier).state =
+                            suggestedQuery;
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Apply',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             // Main Content Body
             Expanded(
