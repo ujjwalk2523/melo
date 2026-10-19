@@ -106,10 +106,8 @@ class LyricsService {
       debugPrint('LyricsService fuzzy search error: $e');
     }
 
-    // 4. Final resilient fallback: dynamic rhythmic synced lyrics
-    final dynamicLyrics = CuratedLyrics.generateDynamicLyrics(cleanTitle, cleanArtist);
-    _cache[cacheKey] = dynamicLyrics;
-    return dynamicLyrics;
+    // 4. If no lyrics are found or device is offline, return empty so UI shows clean state
+    return const TrackLyrics.empty();
   }
 
   TrackLyrics _parseApiResponse(Map<String, dynamic> data) {
