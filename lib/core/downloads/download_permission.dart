@@ -60,7 +60,7 @@ class DownloadPermissionEvaluator {
       return DownloadPermission.authorized(url: url);
     }
 
-    if (song.downloadUrl == null) {
+    if (song.provider == 'saavn' || song.id.startsWith('saavn:')) {
       final streamUrl = song.streamUrl?.trim() ?? '';
       if (streamUrl.isNotEmpty) {
         return DownloadPermission.authorized(url: streamUrl);
