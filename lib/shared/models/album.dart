@@ -1,3 +1,5 @@
+import 'song.dart';
+
 /// Represents a musical album or EP in Melo.
 class Album {
   final String id;
@@ -7,6 +9,7 @@ class Album {
   final int year;
   final int trackCount;
   final String genre;
+  final List<Song> songs;
 
   const Album({
     required this.id,
@@ -16,5 +19,6 @@ class Album {
     required this.year,
     required this.trackCount,
     required this.genre,
+    this.songs = const [],
   });
 }
