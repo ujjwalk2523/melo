@@ -11,6 +11,10 @@ class UserPreferences {
   final bool personalizedRecommendations;
   final bool useListeningHistoryForRecs;
   final String discoveryLevel;
+  final List<String> preferredLanguages;
+  final List<String> preferredArtists;
+  final bool hasCompletedOnboarding;
+  final bool spotifyCanvasEnabled;
 
   const UserPreferences({
     this.audioQuality = 'Hi-Res Lossless (FLAC 24-bit)',
@@ -22,6 +26,22 @@ class UserPreferences {
     this.personalizedRecommendations = true,
     this.useListeningHistoryForRecs = true,
     this.discoveryLevel = 'balanced',
+    this.preferredLanguages = const [
+      'Hindi',
+      'Punjabi',
+      'English',
+      'Bhojpuri',
+      'Haryanvi',
+    ],
+    this.preferredArtists = const [
+      'Arijit Singh',
+      'Yo Yo Honey Singh',
+      'Sidhu Moose Wala',
+      'Diljit Dosanjh',
+      'Shubh',
+    ],
+    this.hasCompletedOnboarding = false,
+    this.spotifyCanvasEnabled = true,
   });
 
   UserPreferences copyWith({
@@ -34,6 +54,10 @@ class UserPreferences {
     bool? personalizedRecommendations,
     bool? useListeningHistoryForRecs,
     String? discoveryLevel,
+    List<String>? preferredLanguages,
+    List<String>? preferredArtists,
+    bool? hasCompletedOnboarding,
+    bool? spotifyCanvasEnabled,
   }) {
     return UserPreferences(
       audioQuality: audioQuality ?? this.audioQuality,
@@ -47,6 +71,12 @@ class UserPreferences {
       useListeningHistoryForRecs:
           useListeningHistoryForRecs ?? this.useListeningHistoryForRecs,
       discoveryLevel: discoveryLevel ?? this.discoveryLevel,
+      preferredLanguages: preferredLanguages ?? this.preferredLanguages,
+      preferredArtists: preferredArtists ?? this.preferredArtists,
+      hasCompletedOnboarding:
+          hasCompletedOnboarding ?? this.hasCompletedOnboarding,
+      spotifyCanvasEnabled:
+          spotifyCanvasEnabled ?? this.spotifyCanvasEnabled,
     );
   }
 }
@@ -64,6 +94,10 @@ class UserPreferencesRepository {
   static const _keyPersonalizedRecs = 'pref_personalized_recs';
   static const _keyUseHistoryForRecs = 'pref_use_history_recs';
   static const _keyDiscoveryLevel = 'pref_discovery_level';
+  static const _keyPreferredLanguages = 'pref_preferred_languages';
+  static const _keyPreferredArtists = 'pref_preferred_artists';
+  static const _keyCompletedOnboarding = 'pref_completed_onboarding';
+  static const _keyCanvasEnabled = 'pref_spotify_canvas_enabled';
 
   UserPreferencesRepository(this._prefs);
 
@@ -79,6 +113,21 @@ class UserPreferencesRepository {
       personalizedRecommendations: _prefs.getBool(_keyPersonalizedRecs) ?? true,
       useListeningHistoryForRecs: _prefs.getBool(_keyUseHistoryForRecs) ?? true,
       discoveryLevel: _prefs.getString(_keyDiscoveryLevel) ?? 'balanced',
+      preferredLanguages:
+          _prefs.getStringList(_keyPreferredLanguages) ??
+          const ['Hindi', 'Punjabi', 'English', 'Bhojpuri', 'Haryanvi'],
+      preferredArtists:
+          _prefs.getStringList(_keyPreferredArtists) ??
+          const [
+            'Arijit Singh',
+            'Yo Yo Honey Singh',
+            'Sidhu Moose Wala',
+            'Diljit Dosanjh',
+            'Shubh',
+          ],
+      hasCompletedOnboarding:
+          _prefs.getBool(_keyCompletedOnboarding) ?? false,
+      spotifyCanvasEnabled: _prefs.getBool(_keyCanvasEnabled) ?? true,
     );
   }
 
@@ -118,9 +167,28 @@ class UserPreferencesRepository {
     await _prefs.setString(_keyDiscoveryLevel, level);
   }
 
+  Future<void> setPreferredLanguages(List<String> languages) async {
+    await _prefs.setStringList(_keyPreferredLanguages, languages);
+  }
+
+  Future<void> setPreferredArtists(List<String> artists) async {
+    await _prefs.setStringList(_keyPreferredArtists, artists);
+  }
+
+  Future<void> setHasCompletedOnboarding(bool completed) async {
+    await _prefs.setBool(_keyCompletedOnboarding, completed);
+  }
+
+  Future<void> setSpotifyCanvasEnabled(bool enabled) async {
+    await _prefs.setBool(_keyCanvasEnabled, enabled);
+  }
+
   Future<void> resetPersonalizationPreferences() async {
     await _prefs.remove(_keyPersonalizedRecs);
     await _prefs.remove(_keyUseHistoryForRecs);
     await _prefs.remove(_keyDiscoveryLevel);
+    await _prefs.remove(_keyPreferredLanguages);
+    await _prefs.remove(_keyPreferredArtists);
+    await _prefs.remove(_keyCompletedOnboarding);
   }
 }
