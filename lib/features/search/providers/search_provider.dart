@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/saavn_service.dart';
+import '../../../core/utils/fuzzy_search_engine.dart';
 import '../../../shared/data/mock_catalog.dart';
 import '../../../shared/models/album.dart';
 import '../../../shared/models/artist.dart';
@@ -105,29 +106,58 @@ final searchSongResultsProvider = Provider<List<Song>>((ref) {
   );
 });
 
-/// Filtered artists matching search query.
+/// Filtered artists matching search query with typo tolerance.
 final searchArtistResultsProvider = Provider<List<Artist>>((ref) {
   final query = ref.watch(searchQueryProvider).trim().toLowerCase();
   if (query.isEmpty) return const [];
 
-  return MockCatalog.artists.where((artist) {
+  final direct = MockCatalog.artists.where((artist) {
     final matchesName = artist.name.toLowerCase().contains(query);
     final matchesGenre = artist.genre.toLowerCase().contains(query);
     return matchesName || matchesGenre;
   }).toList();
+
+  if (direct.isNotEmpty) return direct;
+
+  final correction = FuzzySearchEngine.suggestCorrection(query);
+  if (correction != null) {
+    final correctedLower = correction.toLowerCase();
+    return MockCatalog.artists.where((artist) {
+      final matchesName = artist.name.toLowerCase().contains(correctedLower);
+      final matchesGenre = artist.genre.toLowerCase().contains(correctedLower);
+      return matchesName || matchesGenre;
+    }).toList();
+  }
+
+  return const [];
 });
 
-/// Filtered albums matching search query.
+/// Filtered albums matching search query with typo tolerance.
 final searchAlbumResultsProvider = Provider<List<Album>>((ref) {
   final query = ref.watch(searchQueryProvider).trim().toLowerCase();
   if (query.isEmpty) return const [];
 
-  return MockCatalog.albums.where((album) {
+  final direct = MockCatalog.albums.where((album) {
     final matchesTitle = album.title.toLowerCase().contains(query);
     final matchesArtist = album.artist.toLowerCase().contains(query);
     final matchesGenre = album.genre.toLowerCase().contains(query);
     return matchesTitle || matchesArtist || matchesGenre;
   }).toList();
+
+  if (direct.isNotEmpty) return direct;
+
+  final correction = FuzzySearchEngine.suggestCorrection(query);
+  if (correction != null) {
+    final correctedLower = correction.toLowerCase();
+    return MockCatalog.albums.where((album) {
+      final matchesTitle = album.title.toLowerCase().contains(correctedLower);
+      final matchesArtist = album.artist.toLowerCase().contains(correctedLower);
+      final matchesGenre = album.genre.toLowerCase().contains(correctedLower);
+      return matchesTitle || matchesArtist || matchesGenre;
+    }).toList();
+  }
+
+  return const [];
 });
 
 /// Backward compatibility search results provider.
