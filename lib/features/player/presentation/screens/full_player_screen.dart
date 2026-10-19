@@ -15,9 +15,10 @@ import 'package:melo/shared/widgets/aura_artwork.dart';
 import 'package:melo/features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
 import '../widgets/queue_sheet.dart';
 import '../widgets/realtime_lyrics_sheet.dart';
+import '../widgets/spotify_canvas_widget.dart';
 
 /// Full-screen immersive player UI for Melo (Melo Dark Aura).
-class FullPlayerScreen extends ConsumerWidget {
+class FullPlayerScreen extends ConsumerStatefulWidget {
   const FullPlayerScreen({super.key});
 
   static void show(BuildContext context) {
@@ -34,7 +35,14 @@ class FullPlayerScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FullPlayerScreen> createState() => _FullPlayerScreenState();
+}
+
+class _FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
+  bool _showCanvas = false;
+
+  @override
+  Widget build(BuildContext context) {
     final playerState = ref.watch(playerNotifierProvider);
     final song = playerState.currentSong;
 
@@ -55,7 +63,7 @@ class FullPlayerScreen extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final availableHeight = constraints.maxHeight;
-            final artworkSize = (availableHeight * 0.38).clamp(200.0, 310.0);
+            final artworkSize = (availableHeight * 0.34).clamp(160.0, 300.0);
 
             return Padding(
               padding: const EdgeInsets.symmetric(
@@ -75,52 +83,85 @@ class FullPlayerScreen extends ConsumerWidget {
                         tooltip: 'Collapse',
                         onPressed: () => Navigator.of(context).pop(),
                       ),
-                      Column(
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'PLAYING FROM PLAYLIST',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.2,
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              song.album.isNotEmpty
+                                  ? song.album
+                                  : 'Melo Daily Flow',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            'PLAYING FROM PLAYLIST',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
-                              color: AppColors.textTertiary,
+                          IconButton(
+                            icon: Icon(
+                              _showCanvas
+                                  ? Icons.smart_display_rounded
+                                  : Icons.smart_display_outlined,
+                              color: _showCanvas
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
                             ),
+                            tooltip: _showCanvas
+                                ? 'Switch to Artwork'
+                                : 'Switch to Canvas',
+                            onPressed: () {
+                              setState(() => _showCanvas = !_showCanvas);
+                            },
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            song.album.isNotEmpty
-                                ? song.album
-                                : 'Melo Daily Flow',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
+                          IconButton(
+                            icon: const Icon(Icons.more_horiz_rounded),
+                            color: AppColors.textSecondary,
+                            tooltip: 'Options',
+                            onPressed: () {
+                              _showSongOptionsSheet(context, ref, song);
+                            },
                           ),
                         ],
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.more_horiz_rounded),
-                        color: AppColors.textSecondary,
-                        tooltip: 'Options',
-                        onPressed: () {
-                          _showSongOptionsSheet(context, ref, song);
-                        },
                       ),
                     ],
                   ),
 
-                  // Center Large Artwork with Radiant Glow
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: AuraArtwork(
-                      seed: song.id + song.title,
-                      imageUrl: song.artworkUrl,
-                      size: artworkSize,
-                      borderRadius: BorderRadius.circular(24),
-                      showGlow: true,
-                    ),
-                  ),
+                  // Center: Either Spotify Portrait Canvas OR Classic Large Artwork
+                  _showCanvas
+                      ? SizedBox(
+                          height: artworkSize,
+                          child: SpotifyCanvasWidget(
+                            song: song,
+                            isPlaying: isPlaying,
+                          ),
+                        )
+                      : AuraArtwork(
+                          seed: song.id + song.title,
+                          imageUrl: song.artworkUrl,
+                          size: artworkSize,
+                          borderRadius: BorderRadius.circular(24),
+                          showGlow: true,
+                        ),
 
                   // Metadata & Favorite Row
                   Padding(
@@ -313,9 +354,7 @@ class FullPlayerScreen extends ConsumerWidget {
                                 ),
                               ],
                             ),
-                            child:
-                                (playerState.isLoading ||
-                                    playerState.isBuffering)
+                            child: (playerState.isLoading && !isPlaying)
                                 ? const SizedBox(
                                     width: 28,
                                     height: 28,
@@ -820,7 +859,6 @@ class FullPlayerScreen extends ConsumerWidget {
               : song.streamUrl,
         );
         manager.downloadTrack(downloadableSong);
-        ref.read(playerNotifierProvider.notifier).toggleDownload(song.id, downloadableSong);
       },
     );
   }
