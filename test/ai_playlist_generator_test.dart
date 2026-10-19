@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:melo/core/recommendations/ai_playlist_generator.dart';
 import 'package:melo/shared/data/mock_catalog.dart';
-import 'package:melo/shared/models/song.dart';
 
 void main() {
   group('AiPlaylistGenerator Tests', () {
