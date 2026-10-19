@@ -36,10 +36,39 @@ class AiPlaylistGenerator {
       }).toList();
     }
 
+    // Helper ensuring every generated AI playlist has at least 15-20 tracks
+    List<Song> ensurePlaylistDepth(List<Song> seedSongs, List<String> fallbackGenres, {int minCount = 16}) {
+      final result = <Song>[...seedSongs];
+      final seenIds = result.map((s) => s.id).toSet();
+
+      // 1. First add songs from fallback genres
+      final genreMatches = findByGenre(fallbackGenres);
+      for (final song in genreMatches) {
+        if (result.length >= minCount) break;
+        if (!seenIds.contains(song.id)) {
+          seenIds.add(song.id);
+          result.add(song);
+        }
+      }
+
+      // 2. If still below minCount, add any non-conflicting catalog tracks
+      if (result.length < minCount) {
+        for (final song in catalog) {
+          if (result.length >= minCount) break;
+          if (!seenIds.contains(song.id)) {
+            seenIds.add(song.id);
+            result.add(song);
+          }
+        }
+      }
+
+      return result;
+    }
+
     // -----------------------------------------------------------------------
-    // MIX 1: Desi & Punjabi Pop Daily Mix (Honey Singh, Shubh, Sidhu)
+    // MIX 1: Desi & Punjabi Pop Daily Mix (Honey Singh, Shubh, Sidhu, Diljit)
     // -----------------------------------------------------------------------
-    final desiSongs = catalog.where((s) {
+    final desiSeed = catalog.where((s) {
       final g = s.genre?.toLowerCase() ?? '';
       final a = s.artist.toLowerCase();
       return s.provider == 'saavn' ||
@@ -47,17 +76,26 @@ class AiPlaylistGenerator {
           g.contains('bollywood') ||
           a.contains('honey singh') ||
           a.contains('shubh') ||
-          a.contains('sidhu');
+          a.contains('sidhu') ||
+          a.contains('diljit') ||
+          a.contains('karan aujla') ||
+          a.contains('dhillon');
     }).toList();
 
+    final desiSongs = ensurePlaylistDepth(
+      desiSeed,
+      ['punjabi pop', 'punjabi', 'bollywood', 'hip hop'],
+      minCount: 18,
+    );
+
     if (desiSongs.isNotEmpty) {
-      final artists = desiSongs.map((s) => s.artist.split(',').first.trim()).toSet().take(3).join(', ');
+      final artists = desiSongs.map((s) => s.artist.split(',').first.trim()).toSet().take(4).join(', ');
       playlists.add(
         Playlist(
           id: 'ai-daily-mix-1',
           title: 'Daily Mix 1',
           badge: 'DAILY MIX',
-          description: '$artists and more',
+          description: '$artists and more • ${desiSongs.length} tracks',
           artworkUrl: desiSongs.first.artworkUrl,
           songs: desiSongs,
           isCurated: true,
@@ -89,20 +127,23 @@ class AiPlaylistGenerator {
       return s.artist.toLowerCase().contains(topArtistCandidate!.toLowerCase());
     }).toList();
 
-    // Supplement with closely aligned genre matches so the playlist is complete
-    final candidateGenre = artistSongs.isNotEmpty ? artistSongs.first.genre : null;
-    final alignedSongs = catalog.where((s) {
-      final sameGenre = candidateGenre != null && s.genre == candidateGenre;
-      final sameArtist = s.artist.toLowerCase().contains(topArtistCandidate!.toLowerCase());
-      return sameGenre && !sameArtist;
-    }).take(4).toList();
+    final fullArtistMixSongs = ensurePlaylistDepth(
+      artistSongs,
+      ['punjabi pop', 'bollywood', 'pop', 'hip hop'],
+      minCount: 16,
+    );
 
-    final fullArtistMixSongs = [...artistSongs, ...alignedSongs];
     if (fullArtistMixSongs.isNotEmpty) {
-      final relatedNames = alignedSongs.map((s) => s.artist.split(',').first.trim()).toSet().take(2).join(', ');
-      final desc = relatedNames.isNotEmpty
-          ? 'With $topArtistCandidate, $relatedNames and more'
-          : 'The essential hits and sonic journey of $topArtistCandidate';
+      final otherArtists = fullArtistMixSongs
+          .where((s) => !s.artist.toLowerCase().contains(topArtistCandidate!.toLowerCase()))
+          .map((s) => s.artist.split(',').first.trim())
+          .toSet()
+          .take(3)
+          .join(', ');
+
+      final desc = otherArtists.isNotEmpty
+          ? 'With $topArtistCandidate, $otherArtists • ${fullArtistMixSongs.length} tracks'
+          : 'Essential hits and journey of $topArtistCandidate • ${fullArtistMixSongs.length} tracks';
 
       playlists.add(
         Playlist(
@@ -121,7 +162,13 @@ class AiPlaylistGenerator {
     // -----------------------------------------------------------------------
     // MIX 3: Cyberpunk, Synthwave & High Energy (Daily Mix 2)
     // -----------------------------------------------------------------------
-    final electronicSongs = findByGenre(['synthwave', 'techno', 'electronic', 'future bass']);
+    final electronicSeed = findByGenre(['synthwave', 'techno', 'electronic', 'future bass']);
+    final electronicSongs = ensurePlaylistDepth(
+      electronicSeed,
+      ['synthwave', 'techno', 'future bass', 'electronic'],
+      minCount: 16,
+    );
+
     if (electronicSongs.isNotEmpty) {
       final topArtists = electronicSongs.map((s) => s.artist).toSet().take(3).join(', ');
       playlists.add(
@@ -129,7 +176,7 @@ class AiPlaylistGenerator {
           id: 'ai-daily-mix-2',
           title: 'Daily Mix 2',
           badge: 'DAILY MIX',
-          description: '$topArtists and more',
+          description: '$topArtists and more • ${electronicSongs.length} tracks',
           artworkUrl: electronicSongs.first.artworkUrl,
           songs: electronicSongs,
           isCurated: true,
@@ -141,7 +188,13 @@ class AiPlaylistGenerator {
     // -----------------------------------------------------------------------
     // MIX 4: Chill Lo-Fi & Atmospheric Beats (Daily Mix 3)
     // -----------------------------------------------------------------------
-    final chillSongs = findByGenre(['lo-fi chill', 'chillstep', 'ambient', 'indie folk']);
+    final chillSeed = findByGenre(['lo-fi chill', 'chillstep', 'ambient', 'indie folk']);
+    final chillSongs = ensurePlaylistDepth(
+      chillSeed,
+      ['lo-fi chill', 'chillstep', 'ambient', 'indie folk'],
+      minCount: 16,
+    );
+
     if (chillSongs.isNotEmpty) {
       final topArtists = chillSongs.map((s) => s.artist).toSet().take(3).join(', ');
       playlists.add(
@@ -149,7 +202,7 @@ class AiPlaylistGenerator {
           id: 'ai-daily-mix-3',
           title: 'Daily Mix 3',
           badge: 'DAILY MIX',
-          description: '$topArtists and more',
+          description: '$topArtists and more • ${chillSongs.length} tracks',
           artworkUrl: chillSongs.first.artworkUrl,
           songs: chillSongs,
           isCurated: true,
@@ -159,8 +212,79 @@ class AiPlaylistGenerator {
     }
 
     // -----------------------------------------------------------------------
-    // MIX 5: Real-Time Search & Listening AI Flow
-    // Reacts instantly to the latest active search or last played track!
+    // MIX 5: Bollywood Romantic & Soulful Ballads (Daily Mix 4)
+    // -----------------------------------------------------------------------
+    final romanticSeed = catalog.where((s) {
+      final g = s.genre?.toLowerCase() ?? '';
+      final a = s.artist.toLowerCase();
+      return g.contains('romantic') ||
+          a.contains('arijit') ||
+          a.contains('pritam') ||
+          s.title.toLowerCase().contains('kesariya') ||
+          s.title.toLowerCase().contains('tum hi ho') ||
+          s.title.toLowerCase().contains('channa') ||
+          s.title.toLowerCase().contains('lover');
+    }).toList();
+
+    final romanticSongs = ensurePlaylistDepth(
+      romanticSeed,
+      ['bollywood romantic', 'bollywood', 'retro classics'],
+      minCount: 16,
+    );
+
+    if (romanticSongs.isNotEmpty) {
+      final topArtists = romanticSongs.map((s) => s.artist.split(',').first.trim()).toSet().take(3).join(', ');
+      playlists.add(
+        Playlist(
+          id: 'ai-daily-mix-4',
+          title: 'Daily Mix 4',
+          badge: 'DAILY MIX',
+          description: '$topArtists and more • ${romanticSongs.length} tracks',
+          artworkUrl: romanticSongs.first.artworkUrl,
+          songs: romanticSongs,
+          isCurated: true,
+          creator: 'Made For You • Melo AI',
+        ),
+      );
+    }
+
+    // -----------------------------------------------------------------------
+    // MIX 6: Retro Bollywood & Regional Classics
+    // -----------------------------------------------------------------------
+    final retroSeed = catalog.where((s) {
+      final g = s.genre?.toLowerCase() ?? '';
+      final a = s.artist.toLowerCase();
+      return g.contains('retro') ||
+          g.contains('bhojpuri') ||
+          g.contains('haryanvi') ||
+          a.contains('kishore') ||
+          a.contains('pawan') ||
+          a.contains('masoom');
+    }).toList();
+
+    final retroSongs = ensurePlaylistDepth(
+      retroSeed,
+      ['retro classics', 'bhojpuri', 'haryanvi', 'bollywood'],
+      minCount: 15,
+    );
+
+    if (retroSongs.isNotEmpty) {
+      playlists.add(
+        Playlist(
+          id: 'ai-daily-mix-retro',
+          title: 'Daily Mix: Desi Classics',
+          badge: 'RETRO & REGIONAL',
+          description: 'Kishore Kumar, Pawan Singh, Masoom Sharma • ${retroSongs.length} tracks',
+          artworkUrl: retroSongs.first.artworkUrl,
+          songs: retroSongs,
+          isCurated: true,
+          creator: 'Made For You • Melo AI',
+        ),
+      );
+    }
+
+    // -----------------------------------------------------------------------
+    // MIX 7: Real-Time Search & Listening AI Flow
     // -----------------------------------------------------------------------
     if (recentSearches.isNotEmpty) {
       final latestSearch = recentSearches.first;
@@ -172,20 +296,18 @@ class AiPlaylistGenerator {
       }).toList();
 
       if (searchMatches.isNotEmpty) {
-        // Broaden with related songs from the same genre
-        final primaryGenre = searchMatches.first.genre;
-        final related = catalog.where((s) =>
-            s.genre == primaryGenre &&
-            !searchMatches.any((m) => m.id == s.id)
-        ).take(3).toList();
+        final flowSongs = ensurePlaylistDepth(
+          searchMatches,
+          ['punjabi pop', 'bollywood', 'lo-fi chill', 'synthwave'],
+          minCount: 16,
+        );
 
-        final flowSongs = [...searchMatches, ...related];
         playlists.add(
           Playlist(
             id: 'ai-flow-latest-search',
             title: 'AI Flow: $latestSearch',
             badge: 'AI GENERATED',
-            description: 'Real-time mix dynamically synthesized for "$latestSearch"',
+            description: 'Dynamically synthesized for "$latestSearch" • ${flowSongs.length} tracks',
             artworkUrl: flowSongs.first.artworkUrl,
             songs: flowSongs,
             isCurated: false,
@@ -211,35 +333,6 @@ class AiPlaylistGenerator {
           songs: flowSongs,
           isCurated: false,
           creator: 'Melo Real-Time AI Flow',
-        ),
-      );
-    }
-
-    // -----------------------------------------------------------------------
-    // MIX 6: Retro Bollywood & Regional Classics
-    // -----------------------------------------------------------------------
-    final retroSongs = catalog.where((s) {
-      final g = s.genre?.toLowerCase() ?? '';
-      final a = s.artist.toLowerCase();
-      return g.contains('retro') ||
-          g.contains('bhojpuri') ||
-          g.contains('haryanvi') ||
-          a.contains('kishore') ||
-          a.contains('pawan') ||
-          a.contains('ajay');
-    }).toList();
-
-    if (retroSongs.isNotEmpty) {
-      playlists.add(
-        Playlist(
-          id: 'ai-daily-mix-retro',
-          title: 'Daily Mix: Desi Classics',
-          badge: 'RETRO & REGIONAL',
-          description: 'Kishore Kumar, Pawan Singh, Ajay Hooda and more',
-          artworkUrl: retroSongs.first.artworkUrl,
-          songs: retroSongs,
-          isCurated: true,
-          creator: 'Made For You • Melo AI',
         ),
       );
     }
