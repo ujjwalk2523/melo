@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:melo/core/lyrics/curated_lyrics.dart';
-import 'package:melo/core/lyrics/lyrics_model.dart';
 import 'package:melo/core/lyrics/lyrics_parser.dart';
 
 void main() {
