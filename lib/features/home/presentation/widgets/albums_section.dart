@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:melo/core/theme/app_dimensions.dart';
+import 'package:melo/features/playlists/presentation/widgets/playlist_detail_sheet.dart';
 import 'package:melo/shared/models/album.dart';
+import 'package:melo/shared/models/playlist.dart';
 import 'package:melo/shared/widgets/album_card.dart';
 import 'package:melo/shared/widgets/section_header.dart';
 
@@ -42,12 +44,16 @@ class AlbumsSection extends ConsumerWidget {
               return AlbumCard(
                 album: album,
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Viewing album: ${album.title}'),
-                      duration: const Duration(seconds: 1),
-                    ),
+                  final pl = Playlist(
+                    id: album.id,
+                    title: album.title,
+                    description: 'Album by ${album.artist} • Released ${album.year}',
+                    artworkUrl: album.artworkUrl,
+                    songs: album.songs,
+                    isCurated: true,
+                    creator: album.artist,
                   );
+                  PlaylistDetailSheet.show(context, pl);
                 },
               );
             },
