@@ -36,6 +36,7 @@ class _RealtimeLyricsSheetState extends ConsumerState<RealtimeLyricsSheet> {
 
   int _lastActiveIndex = -1;
   bool _userScrolled = false;
+  bool _showHinglish = true;
   Timer? _resumeSyncTimer;
 
   @override
@@ -168,6 +169,51 @@ class _RealtimeLyricsSheetState extends ConsumerState<RealtimeLyricsSheet> {
                         ),
                       ),
                       const Spacer(),
+                      lyricsAsync.whenOrNull(
+                        data: (rawLyrics) {
+                          if (rawLyrics.containsIndicScript) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: InkWell(
+                                onTap: () => setState(() => _showHinglish = !_showHinglish),
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: _showHinglish
+                                        ? AppColors.primary.withValues(alpha: 0.18)
+                                        : AppColors.surfaceHighlight,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: _showHinglish ? AppColors.primary : AppColors.surfaceBorder,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.translate_rounded,
+                                        size: 13,
+                                        color: _showHinglish ? AppColors.primary : AppColors.textSecondary,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _showHinglish ? 'Hinglish' : 'Original',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: _showHinglish ? AppColors.primary : AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          return null;
+                        },
+                      ) ?? const SizedBox.shrink(),
                       IconButton(
                         icon: const Icon(Icons.keyboard_arrow_down_rounded),
                         color: AppColors.textSecondary,
@@ -212,7 +258,8 @@ class _RealtimeLyricsSheetState extends ConsumerState<RealtimeLyricsSheet> {
                 // Lyrics Content Area
                 Expanded(
                   child: lyricsAsync.when(
-                    data: (lyrics) {
+                    data: (rawLyrics) {
+                      final lyrics = _showHinglish ? rawLyrics.transliterated() : rawLyrics;
                       if (!lyrics.hasLyrics) {
                         return _buildEmptyLyricsState();
                       }
