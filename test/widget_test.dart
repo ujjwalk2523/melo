@@ -59,7 +59,10 @@ void main() {
 
         // 2. Tap a song card in Home
         final songCardFinder = find.byType(SongCard).first;
+        await tester.drag(find.byType(CustomScrollView), const Offset(0, -350));
+        await tester.pumpAndSettle();
         expect(songCardFinder, findsOneWidget);
+        final tappedSong = tester.widget<SongCard>(songCardFinder).song;
         await tester.tap(songCardFinder);
         await tester.pumpAndSettle();
 
@@ -67,7 +70,7 @@ void main() {
         expect(
           find.descendant(
             of: find.byType(MiniPlayer),
-            matching: find.text('Solar Flare'),
+            matching: find.text(tappedSong.title),
           ),
           findsOneWidget,
         );
