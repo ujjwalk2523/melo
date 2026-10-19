@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:melo/core/theme/app_dimensions.dart';
 import 'package:melo/shared/models/artist.dart';
 import 'package:melo/shared/widgets/artist_card.dart';
+import 'package:melo/shared/widgets/artist_detail_sheet.dart';
 import 'package:melo/shared/widgets/section_header.dart';
 
 /// Horizontally scrollable section displaying featured musical artists.
@@ -42,12 +43,7 @@ class ArtistsSection extends ConsumerWidget {
               return ArtistCard(
                 artist: artist,
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Exploring artist: ${artist.name}'),
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
+                  ArtistDetailSheet.show(context, artist);
                 },
               );
             },
