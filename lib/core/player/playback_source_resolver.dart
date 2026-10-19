@@ -117,6 +117,16 @@ class PlaybackSourceResolver {
       }
     }
 
+    // Dynamic track resolution via search if title and artist are present
+    if (saavnService != null && song.title.isNotEmpty && song.artist.isNotEmpty && song.provider != 'melo-mock') {
+      try {
+        final searchResults = await saavnService!.searchSongs('${song.title} ${song.artist}', limit: 1);
+        if (searchResults.isNotEmpty && searchResults.first.streamUrl != null) {
+          return RemoteUrlSource(searchResults.first.streamUrl!, song);
+        }
+      } catch (_) {}
+    }
+
     if (song.provider == 'audius' ||
         song.id.startsWith('audius:') ||
         (song.streamUrl != null && song.streamUrl!.contains('audius'))) {
