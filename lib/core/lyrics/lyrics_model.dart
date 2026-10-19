@@ -1,3 +1,5 @@
+import 'transliteration_service.dart';
+
 /// Model representing a single line of lyrics with an associated playback timestamp.
 class LyricLine {
   final Duration time;
@@ -43,4 +45,31 @@ class TrackLyrics {
   bool get hasLyrics =>
       (isSynced && lines.isNotEmpty) ||
       (plainLyrics != null && plainLyrics!.trim().isNotEmpty);
+
+  /// Returns true if this lyrics payload contains Gurmukhi or Devanagari text.
+  bool get containsIndicScript {
+    final transliterator = TransliterationService.instance;
+    if (plainLyrics != null && transliterator.containsIndicScript(plainLyrics!)) {
+      return true;
+    }
+    return lines.any((l) => transliterator.containsIndicScript(l.text));
+  }
+
+  /// Returns a copy of the lyrics with Punjabi Gurmukhi and Hindi Devanagari converted to Romanized Hinglish/English.
+  TrackLyrics transliterated() {
+    final transliterator = TransliterationService.instance;
+    final newLines = lines
+        .map((l) => LyricLine(
+              time: l.time,
+              text: transliterator.transliterate(l.text),
+            ))
+        .toList();
+    final newPlain = plainLyrics != null ? transliterator.transliterate(plainLyrics!) : null;
+    return TrackLyrics(
+      plainLyrics: newPlain,
+      syncedLyrics: syncedLyrics,
+      lines: newLines,
+      isSynced: isSynced,
+    );
+  }
 }
