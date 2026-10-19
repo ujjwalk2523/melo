@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/song.dart';
 import '../database/database_providers.dart';
+import '../network/saavn_service.dart';
 import 'download_manager.dart';
 import 'download_repository.dart';
 import 'download_service.dart';
@@ -32,12 +33,14 @@ final downloadManagerProvider = Provider<DownloadManager>((ref) {
   final service = ref.watch(downloadServiceProvider);
   final repository = ref.watch(downloadRepositoryProvider);
   final prefs = ref.watch(userPreferencesRepositoryProvider);
+  final saavn = ref.watch(saavnServiceProvider);
 
   final manager = DownloadManager(
     storage: storage,
     service: service,
     repository: repository,
     preferencesRepo: prefs,
+    saavnService: saavn,
   );
 
   if (!Platform.environment.containsKey('FLUTTER_TEST')) {
